@@ -17,8 +17,8 @@ class Menu :
         img_return_1 = pygame.transform.scale_by(self.img_button.copy(), 1.0)
         img_return_2 = pygame.transform.scale_by(self.img_button.copy(), 0.90)
 
-        img_return_1.blit(police1.render("Back", (10, 10), 0), (76, 32))
-        img_return_2.blit(police2.render("Back", (10, 10), 0), (68, 28))
+        img_return_1.blit(police1.render("Back", False, 0), (76, 32))
+        img_return_2.blit(police2.render("Back", False, 0), (68, 28))
 
         self.button_return = Button(screen, [img_return_1, img_return_2], (100, 650))
 
@@ -47,8 +47,8 @@ class Menu_Principal(Menu) :
         img_solo_1 = pygame.transform.scale_by(self.img_button.copy(), 1.0)
         img_solo_2 = pygame.transform.scale_by(self.img_button.copy(), 0.90)
 
-        img_solo_1.blit(police1.render("Solo", (10, 10), 0), (76, 32))
-        img_solo_2.blit(police2.render("Solo", (10, 10), 0), (68, 28))
+        img_solo_1.blit(police1.render("Solo", False, 0), (76, 32))
+        img_solo_2.blit(police2.render("Solo", False, 0), (68, 28))
 
         self.button_play_solo = Button(screen, [img_solo_1, img_solo_2], (540, 300))
         
@@ -56,8 +56,8 @@ class Menu_Principal(Menu) :
         img_multiplayer_1 = pygame.transform.scale_by(self.img_button.copy(), 1.0)
         img_multiplayer_2 = pygame.transform.scale_by(self.img_button.copy(), 0.90)
 
-        img_multiplayer_1.blit(police1.render("Multiplayer", (10, 10), 0), (27, 32))
-        img_multiplayer_2.blit(police2.render("Multiplayer", (10, 10), 0), (24, 28))
+        img_multiplayer_1.blit(police1.render("Multiplayer", False, 0), (27, 32))
+        img_multiplayer_2.blit(police2.render("Multiplayer", False, 0), (24, 28))
 
         self.button_play_2_players = Button(screen, [img_multiplayer_1, img_multiplayer_2], (540, 450))
 
@@ -77,8 +77,8 @@ class Menu_Solo(Menu) :
         img_game1_1 = pygame.transform.scale_by(self.img_button.copy(), 1.0)
         img_game1_2 = pygame.transform.scale_by(self.img_button.copy(), 0.90)
 
-        img_game1_1.blit(police1.render("Game 1", (10, 10), 0), (60, 32))
-        img_game1_2.blit(police2.render("Game 1", (10, 10), 0), (56, 28))
+        img_game1_1.blit(police1.render("Game 1", False, 0), (60, 32))
+        img_game1_2.blit(police2.render("Game 1", False, 0), (56, 28))
 
         self.button_game1 = Button(screen, [img_game1_1, img_game1_2], (200, 350))
 
@@ -98,8 +98,8 @@ class Menu_2players(Menu) :
         img_game1_1 = pygame.transform.scale_by(self.img_button.copy(), 1.0)
         img_game1_2 = pygame.transform.scale_by(self.img_button.copy(), 0.90)
 
-        img_game1_1.blit(police1.render("Game 1", (10, 10), 0), (60, 32))
-        img_game1_2.blit(police2.render("Game 1", (10, 10), 0), (56, 28))
+        img_game1_1.blit(police1.render("Game 1", False, 0), (60, 32))
+        img_game1_2.blit(police2.render("Game 1", False, 0), (56, 28))
 
         self.button_game1 = Button(screen, [img_game1_1, img_game1_2], (200, 350))
 

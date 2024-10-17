@@ -14,6 +14,9 @@ class Game :
 
         self.etat = False
 
+        self.police1 = police1
+        self.police2 = police2
+
         self.time_start = pygame.time.get_ticks()
         self.timer = 0
         self.start = False
@@ -24,7 +27,7 @@ class Game :
         self.ball = Ball(screen, ball_circle, (540, 360))
 
         self.ball.a = 1 #coeffcient d'accélération de la balle
-        self.time_up_acceleration = 6000
+        self.time_up_acceleration = 5
 
         #création de la raquette du joueur
         racket_rect = pygame.Surface((15, 100))
@@ -53,11 +56,30 @@ class Game :
 
     #affichage des éléments de la partie
     def draw(self) : 
+        #affichage du compte à rebours
+        if self.start == False and self.countdown() == False :
+            countdown = 3
+            if self.return_dt() >= 2900 :
+                countdown = 1
+            elif self.return_dt() >= 1900 :
+                countdown = 2
+            self.screen.blit(self.police1.render(str(countdown), False, 0), (525, 300))
+
+        #affichage de la balles, des raquettes et des obstacles
         self.ball.draw()
         self.racket.draw()
         self.racket_ia.draw()
         for wall in self.walls :
             pygame.draw.rect(self.screen, (200, 200, 0), wall)
+
+        #affichage du timer
+        if self.start == True : 
+            timer = str(self.timer//60) + ":" 
+            if self.timer%60 < 10 : 
+                timer += "0" + str(self.timer%60)
+            else : 
+                timer += str(self.timer%60)
+            self.screen.blit(self.police1.render(str(timer), False, (255, 255, 255)), (500, 40))
 
     #applique les actions de la partie
     def apply(self) :
@@ -80,7 +102,7 @@ class Game :
             self.racket_ia.apply()
 
             #timer du jeu
-            self.timer = self.return_dt()
+            self.timer = self.return_dt()//1000
 
     #gère les évènements
     def manage_events(self, event) : 
@@ -117,10 +139,10 @@ class Game :
     #renvoie le coefficient d'accélération de la balle en fonction du temps
     def ball_acceleration(self)  :
         if self.ball.vx*self.ball.a < 10 and self.ball.v < 17 : 
-            self.ball.a = 1 + (self.return_dt()//self.time_up_acceleration)/10
+            self.ball.a = 1 + (self.timer//self.time_up_acceleration)/10
 
             if abs(self.racket.a*self.racket.vy) < 12.5 :
-                self.racket.a = 1 + (self.return_dt()//self.time_up_acceleration)/10
-                self.racket_ia.a = 1 + (self.return_dt()//self.time_up_acceleration)/10
+                self.racket.a = 1 + (self.timer//self.time_up_acceleration)/10
+                self.racket_ia.a = 1 + (self.timer//self.time_up_acceleration)/10
 
         
