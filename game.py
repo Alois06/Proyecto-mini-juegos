@@ -15,6 +15,8 @@ class Game :
         self.etat = False
 
         self.time_start = pygame.time.get_ticks()
+        self.timer = 0
+        self.start = False
 
         #création de la balle
         ball_circle = pygame.Surface((20, 20), pygame.SRCALPHA)
@@ -25,13 +27,13 @@ class Game :
         self.time_up_acceleration = 6000
 
         #création de la raquette du joueur
-        racket_rect = pygame.Surface((12, 100))
-        pygame.draw.rect(racket_rect, (0, 0, 255), (0, 0, 12, 100))
+        racket_rect = pygame.Surface((15, 100))
+        pygame.draw.rect(racket_rect, (0, 0, 255), (0, 0, 15, 100))
         self.racket = Racket(screen, racket_rect, (30, 360))
 
         #création de la raquette de l'adversaire
-        racket_ia = pygame.Surface((12, 100))
-        pygame.draw.rect(racket_ia, (0, 0, 255), (0, 0, 12, 100))
+        racket_ia = pygame.Surface((15, 100))
+        pygame.draw.rect(racket_ia, (0, 0, 255), (0, 0, 15, 100))
         self.racket_ia = Racket(screen, racket_ia, (1050, 360))
 
         #création des obstacles : 
@@ -42,7 +44,7 @@ class Game :
     def set(self) : 
         self.etat = True
         sound.background_music.stop()
-        sound.game_music.play(loops=-1)
+        sound.countdown_sound.play()
 
     def unset(self) :
         self.etat = False
@@ -60,16 +62,25 @@ class Game :
     #applique les actions de la partie
     def apply(self) :
 
-        #applique le mouvement de la balle
-        self.ball_acceleration()
-        self.ball.apply(self.walls, [self.racket.rect, self.racket_ia.rect])
+        if self.countdown() == True and self.start == False :
+            self.start = True
+            sound.game_music.play(loops=-1)
+            self.time_start = pygame.time.get_ticks()
 
-        #applique le mouvement de la raquette du joueur
-        self.racket.apply()
+        if self.start == True :     
+            #applique le mouvement de la balle
+            self.ball_acceleration()
+            self.ball.apply(self.walls, [self.racket.rect, self.racket_ia.rect])
 
-        #applique le mouvement de la raquette de l'adversaire
-        self.ia_racket_move()
-        self.racket_ia.apply()
+            #applique le mouvement de la raquette du joueur
+            self.racket.apply()
+
+            #applique le mouvement de la raquette de l'adversaire
+            self.ia_racket_move()
+            self.racket_ia.apply()
+
+            #timer du jeu
+            self.timer = self.return_dt()
 
     #gère les évènements
     def manage_events(self, event) : 
@@ -95,6 +106,13 @@ class Game :
     #renvoie le temps qui s'est écoulé depuis le début de la partie
     def return_dt(self) :
         return pygame.time.get_ticks() - self.time_start
+    
+    #renvoie le compte à rebours avant le début de la partie
+    def countdown(self) : 
+        if self.return_dt() >= 4200 :
+            return True
+        else : 
+            return False
     
     #renvoie le coefficient d'accélération de la balle en fonction du temps
     def ball_acceleration(self)  :

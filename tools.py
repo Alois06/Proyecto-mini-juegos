@@ -50,12 +50,9 @@ def find_y(point, abs_x, vx, vy) -> float :
 #compare la différence d'abscisse et la différence d'ordonnée pour établir dans quel sens se fait la déviation 
 #(dans le cas d'un angle notamment)
 def compare_impact(dx, dy, vx, vy) :
-    if dx > dy + 1 : 
+    if dx > dy : 
         vy *= -1
-    elif dy > dx + 1 :
+    elif dy > dx :
         vx *= -1
-    else :
-        vx *= -1
-        vy *= -1
 
     return  [vx, vy]

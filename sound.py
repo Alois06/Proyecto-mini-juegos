@@ -12,6 +12,8 @@ class Sound :
 
         self.ball_sound = pygame.mixer.Sound("assets/sounds/ball_impact.mp3")
 
+        self.countdown_sound = pygame.mixer.Sound("assets/sounds/countdown.mp3")
+
     def stop(self) :
         pygame.mixer.stop()
 
@@ -20,12 +22,14 @@ class Sound :
         self.select_sound.set_volume(0.3)
         self.game_music.set_volume(1.0)
         self.ball_sound.set_volume(1.0)
+        self.countdown_sound.set_volume(1.0)
 
     def volume_off(self) : 
         self.background_music.set_volume(0)
         self.select_sound.set_volume(0)
         self.game_music.set_volume(0)
         self.ball_sound.set_volume(0)
+        self.countdown_sound.set_volume(0)
 
     def change_volume(self) :
         self.sound_on = not(self.sound_on)

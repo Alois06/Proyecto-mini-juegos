@@ -78,29 +78,61 @@ class Ball :
                         dx = obstacle.right - self.rect.left
                         dy = obstacle.bottom - self.rect.top
 
-                        comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
-                        self.vx, self.vy = comparaison[0], comparaison[1]
+                        if self.vx < 0 and self.vy < 0 and abs(dx-dy) <= 2 :
+                            self.vx = abs(self.vx)
+                            self.vy = abs(self.vy)
+                        elif self.vx < 0 and self.vy > 0 : 
+                            self.vx = abs(self.vx)
+                        elif self.vx > 0 and self.vy < 0 : 
+                            self.vy = abs(self.vy)
+                        else : 
+                            comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
+                            self.vx, self.vy = comparaison[0], comparaison[1]
                     
                     if self.rect.collidepoint(obstacle.topright) : 
                         dx = obstacle.right - self.rect.left
                         dy = abs(obstacle.top - self.rect.bottom)
                         
-                        comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
-                        self.vx, self.vy = comparaison[0], comparaison[1]
+                        if self.vx < 0 and self.vy > 0 and abs(dx-dy) <= 2 :
+                            self.vx = abs(self.vx)
+                            self.vy = -abs(self.vy)
+                        elif self.vx < 0 and self.vy < 0 : 
+                            self.vx = abs(self.vx)
+                        elif self.vx > 0 and self.vy > 0 : 
+                            self.vy = -abs(self.vy)
+                        else : 
+                            comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
+                            self.vx, self.vy = comparaison[0], comparaison[1]
 
                     if self.rect.collidepoint(obstacle.topleft) : 
                         dx = abs(obstacle.left - self.rect.right)
                         dy = abs(obstacle.top - self.rect.bottom)
-                        
-                        comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
-                        self.vx, self.vy = comparaison[0], comparaison[1]
+
+                        if self.vx > 0 and self.vy > 0 and abs(dx-dy) <= 2 :
+                            self.vx = -abs(self.vx)
+                            self.vy = -abs(self.vy)
+                        elif self.vx > 0 and self.vy < 0 : 
+                            self.vx = -abs(self.vx)
+                        elif self.vx < 0 and self.vy > 0 : 
+                            self.vy = -abs(self.vy)
+                        else : 
+                            comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
+                            self.vx, self.vy = comparaison[0], comparaison[1]
 
                     if self.rect.collidepoint(obstacle.bottomleft) : 
                         dx = abs(obstacle.left - self.rect.right)
                         dy = obstacle.bottom - self.rect.top
                         
-                        comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
-                        self.vx, self.vy = comparaison[0], comparaison[1]
+                        if self.vx > 0 and self.vy < 0 and abs(dx-dy) <= 2 :
+                            self.vx = -abs(self.vx)
+                            self.vy = abs(self.vy)
+                        elif self.vx > 0 and self.vy > 0 : 
+                            self.vx = -abs(self.vx)
+                        elif self.vx < 0 and self.vy < 0 : 
+                            self.vy = abs(self.vy)
+                        else : 
+                            comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
+                            self.vx, self.svy = comparaison[0], comparaison[1]
 
         #Applique le mouvement de la balle
         self.move()
