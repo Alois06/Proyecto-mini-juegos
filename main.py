@@ -20,6 +20,9 @@ time = pygame.time.Clock()
 #création des polices
 police1 = pygame.font.Font("assets/polices/good timing bd.ttf", 30)
 police2 = pygame.font.Font("assets/polices/good timing bd.ttf", 27)
+police3 = pygame.font.Font("assets/polices/DigitalDream.ttf", 30)
+police4 = pygame.font.Font("assets/polices/Pixel Digivolve.otf", 35)
+police3.bold = True
 
 #image de fond d'écran
 background = pygame.image.load("assets/background.jpg")
@@ -35,7 +38,7 @@ menu_solo = Menu_Solo(screen, police1, police2)
 menu_2players = Menu_2players(screen, police1, police2)
 
 #création de la classe du jeu
-game = Game(screen, police1, police2)
+game = Game(screen, police1, police2, police3, police4)
 
 #DEBUT DE LA BOUCLE DE JEU
 
@@ -67,8 +70,8 @@ while game_on :
             elif menu_solo.etat : 
                 if menu_solo.button_game1.click() :
                     menu_solo.unset()
+                    game = Game(screen, police1, police2, police3, police4)
                     game.set()
-                    sound.background_music.stop()
                 elif menu_solo.button_return.click() :
                     menu_solo.unset()
                     menu.set()
@@ -76,8 +79,8 @@ while game_on :
             elif menu_2players.etat : 
                 if menu_2players.button_game1.click() :
                     menu_2players.unset()
+                    game = Game(screen, police1, police2, police3, police4)
                     game.set()
-                    sound.background_music.stop()
                 elif menu_2players.button_return.click() :
                     menu_2players.unset()
                     menu.set()
@@ -101,6 +104,8 @@ while game_on :
     elif game.etat :
         game.apply() 
         game.draw()
+        if game.etat == False :
+            menu.set()
 
     #actualisation de l'écran
     pygame.display.flip()
