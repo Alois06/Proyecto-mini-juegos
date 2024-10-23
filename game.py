@@ -4,7 +4,7 @@ import pyscroll
 import random
 import math
 
-from objects import Ball, Racket
+from objects import Ball, Racket, Obstacle, ObstacleRebond, ObstacleTeleportation
 from sound import sound
 import tools
 
@@ -47,7 +47,7 @@ class Game :
         self.create_rackets()
 
         #création des obstacles : 
-        self.walls = []
+        self.walls = pygame.sprite.Group()
         self.create_walls()
 
     def create_ball(self) :
@@ -69,10 +69,33 @@ class Game :
         self.racket_ia = Racket(self.screen, racket_ia, (1050, 360))
 
     def create_walls(self) :
-        zones = [[(100, 325), (0, 645), (50, 75), (50, 75)], [(400, 605), (0, 200), (50, 75), (50, 75)], [(680, 905), (0, 645), (50, 75), (50, 75)], [(400, 605), (445, 645), (50, 75), (50, 75)]]
+
+        #obstacles normaux
+        zones = [[(130, 375), (35, 685), (50, 75), (50, 75)], [(450, 630), (35, 250), (50, 75), (50, 75)], [(705, 950), (35, 685), (50, 75), (50, 75)], [(450, 630), (470, 685), (50, 75), (50, 75)]]
         for zone in zones : 
             for i in range(random.randint(2, 5)) : 
-                self.walls.append(pygame.rect.Rect(random.randint(zone[0][0], zone[0][1]), random.randint(zone[1][0], zone[1][1]), random.randint(zone[2][0], zone[2][1]), random.randint(zone[3][0], zone[3][1])))
+                surface = pygame.surface.Surface((random.randint(zone[2][0], zone[2][1]), random.randint(zone[3][0], zone[3][1])))
+                surface.fill((200, 200, 0))
+                coords = (random.randint(zone[0][0], zone[0][1]), random.randint(zone[1][0], zone[1][1]))
+                self.walls.add(Obstacle(self.screen, image=surface, coords=coords))
+            
+        #obstacles rebonds aléatoire 
+        for pos in [(200, 150), (200, 570), (880, 570), (880, 150)] :
+            radius = 25
+            surface = pygame.surface.Surface((radius*2, radius*2))
+            pygame.draw.circle(surface, (255, 100, 10), (radius, radius), radius)
+            surface.set_colorkey(0)
+            self.walls.add(ObstacleRebond(self.screen, image=surface, coords=pos))
+
+        #obstacles téléportation de la balle
+        for pos in [(400, 225), (400, 495), (680, 495), (680, 225)] :
+            radius = 20
+            surface = pygame.surface.Surface((radius*2, radius*2))
+            pygame.draw.circle(surface, (125, 100, 255), (radius, radius), radius)
+            surface.set_colorkey(0)
+            self.walls.add(ObstacleTeleportation(self.screen, image=surface, coords=pos, coords_tp=(540, 360)))
+
+        #obstacles en mouvement
 
     def set(self) : 
         self.etat = True
@@ -93,8 +116,7 @@ class Game :
             self.ball.draw()
             self.racket.draw()
             self.racket_ia.draw()
-            for wall in self.walls :
-                pygame.draw.rect(self.screen, (200, 200, 0), wall)
+            self.walls.draw(self.screen)
 
             #affichage du compte à rebours
             if self.start == False and self.countdown() == False :
@@ -158,7 +180,7 @@ class Game :
         if self.start == True and self.game_over == False :     
             #applique le mouvement de la balle
             self.ball_acceleration()
-            self.ball.apply(self.walls, [self.racket.rect, self.racket_ia.rect])
+            self.ball.apply(self.walls.sprites(), [self.racket, self.racket_ia])
 
             #applique le mouvement de la raquette du joueur
             self.racket.apply()
@@ -230,7 +252,7 @@ class Game :
     #permet le déplacement automatique de la raquette ennemie (bot)
     def ia_racket_move(self) : 
         #calcule de la future coordonnée y de la balle en x = 1050
-        prediction = tools.prediction(self.ball.rect.copy(), self.ball.vx, self.ball.vy, self.ball.a, 1050, self.walls + [self.racket.rect])
+        prediction = tools.prediction(self.ball.rect.copy(), self.ball.vx, self.ball.vy, self.ball.a, 1050, self.walls.sprites() + [self.racket])
         future_ball_coords = prediction[0]
         future_y_coord = tools.find_y(future_ball_coords, 1050, prediction[1], prediction[2])
 

@@ -50,6 +50,9 @@ class Ball :
 
         for obstacle in walls + rackets : 
 
+            obstacle_obj = obstacle
+            obstacle = obstacle.rect
+
             original_vx = self.vx
             original_vy = self.vy
 
@@ -133,6 +136,10 @@ class Ball :
                         else : 
                             comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
                             self.vx, self.svy = comparaison[0], comparaison[1]
+                
+                #obstacles avec rebond aléatoire ou téléportation
+                if type(obstacle_obj) == ObstacleRebond or type(obstacle_obj) == ObstacleTeleportation :
+                    obstacle_obj.effect(self)
 
         #Applique le mouvement de la balle
         self.move()
@@ -170,3 +177,43 @@ class Racket :
 
     def draw(self) : 
         self.screen.blit(self.image, self.rect)
+
+class Obstacle(pygame.sprite.Sprite) :
+    def __init__(self, screen, image, coords) :
+
+        super().__init__()
+
+        self.screen = screen
+
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = coords
+        
+    def draw(self) : 
+        self.screen.blit(self.image, self.rect)
+
+    def move(self, coords) : 
+        self.rect.center = coords
+
+class ObstacleRebond(Obstacle) :
+    def __init__(self, screen, image, coords):
+        super().__init__(screen, image, coords)
+
+    def effect(self, ball:Ball) :
+        x_sign = ball.vx/abs(ball.vx)
+        y_sign = ball.vy/abs(ball.vy)
+
+        ball.vx = random.randint(2, 5)*x_sign
+        ball.vy = random.randint(2, 5)*y_sign
+
+class ObstacleTeleportation(Obstacle) :
+    def __init__(self, screen, image, coords, coords_tp):
+        super().__init__(screen, image, coords)
+
+        self.coords_tp = coords_tp
+
+    def effect(self, ball:Ball) :
+        ball.rect.center = self.coords_tp
+        ball.vx = random.randint(2, 5)*[-1, 1][random.randint(0, 1)]
+        ball.vy = random.randint(2, 5)*[-1, 1][random.randint(0, 1)]
+

@@ -1,4 +1,10 @@
-def prediction(rect, vx, vy, a, x_end, obstacles) -> tuple :
+def prediction(rect, vx, vy, a, x_end, obs) -> tuple :
+
+    obstacles = []
+    obstacles_obj = []
+    for ob in obs :
+        obstacles.append(ob.rect)
+        obstacles_obj.append(ob)
 
     k_stop = 0
 
