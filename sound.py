@@ -25,7 +25,7 @@ class Sound :
         self.game_music.set_volume(1.0)
         self.ball_sound.set_volume(1.0)
         self.countdown_sound.set_volume(1.0)
-        self.alert_sound.set_volume(1.0)
+        self.alert_sound.set_volume(0.75)
 
     def volume_off(self) : 
         self.background_music.set_volume(0)

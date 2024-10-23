@@ -24,10 +24,14 @@ class Game :
         self.timer = 0
         self.timer_save = self.timer
         self.time_up_acceleration = 3
-        self.game_duration = 40
+        self.game_duration = 150
 
         self.start = False
+
+        #game over
         self.game_over = False
+        self.game_over_surface = pygame.surface.Surface((1080, 720))
+        self.game_over_surface.fill((0, 0, 255))
 
         #score
         self.player_score = 0
@@ -122,26 +126,25 @@ class Game :
         #affichage de l'écran de fin de partie
         else : 
 
-            #écran noir
-            self.screen.fill(0)
-
             #petite animation
-            for i in range(5) :
-                surface = pygame.surface.Surface((20, 20))
-                surface.fill(pygame.color.Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-                self.screen.blit(surface, (random.randint(0, 1060), random.randint(0, 700)))
+            for i in range(13) :
+                surface = pygame.surface.Surface((42, 42))
+                surface.fill((255, 255, 0))
+                #surface.fill(pygame.color.Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+                self.game_over_surface.blit(surface, (random.randint(0, 1060), random.randint(0, 700)))
+            self.screen.blit(self.game_over_surface, (0, 0))
 
             #affichage du vainqueur
             if self.player_score > self.bot_score :
-                self.screen.blit(self.police4.render("YOU WON !", False, 0), (450, 300))
+                self.screen.blit(self.police4.render("YOU WON !", False, 0), (430, 300))
             elif self.player_score < self.bot_score :
-                self.screen.blit(self.police4.render("YOU LOSE !", False, 0), (450, 300))
+                self.screen.blit(self.police4.render("YOU LOSE !", False, 0), (425, 300))
             else : 
-                self.screen.blit(self.police4.render("DRAW !", False, 0), (475, 300))
+                self.screen.blit(self.police4.render("DRAW !", False, 0), (450, 300))
 
             #affichage du score et du timer
-            self.screen.blit(self.police3.render(self.return_str_timer(), False, (255, 255, 255)), (500, 40))
-            self.screen.blit(self.police3.render(self.return_str_score(), False, (255, 255, 255)), (485, 100)) 
+            self.screen.blit(self.police3.render(self.return_str_timer(), False, 0), (500, 40))
+            self.screen.blit(self.police3.render(self.return_str_score(), False, 0), (485, 100)) 
 
     #applique les actions de la partie
     def apply(self) :
@@ -178,7 +181,7 @@ class Game :
 
             #temps écoulé
             if self.countdown_end() == 30 :
-                sound.alert_sound.play(maxtime=1500)
+                sound.alert_sound.play()
             elif self.countdown_end() == 4 and sound.countdown_sound.get_num_channels() == 0 :
                 sound.countdown_sound.play()
             elif self.countdown_end() <= 0 :

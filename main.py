@@ -21,7 +21,7 @@ time = pygame.time.Clock()
 police1 = pygame.font.Font("assets/polices/good timing bd.ttf", 30)
 police2 = pygame.font.Font("assets/polices/good timing bd.ttf", 27)
 police3 = pygame.font.Font("assets/polices/DigitalDream.ttf", 30)
-police4 = pygame.font.Font("assets/polices/Pixel Digivolve.otf", 35)
+police4 = pygame.font.Font("assets/polices/Pixel Digivolve.otf", 50)
 police3.bold = True
 
 #image de fond d'écran
