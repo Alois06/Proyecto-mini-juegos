@@ -4,7 +4,7 @@ import pyscroll
 import random
 import math
 
-from objects import Ball, Racket, Obstacle, ObstacleRebond, ObstacleTeleportation
+from objects import Ball, Racket, Obstacle, ObstacleRebond, ObstacleTeleportation, ObstacleMouvant
 from sound import sound
 import tools
 
@@ -71,16 +71,16 @@ class Game :
     def create_walls(self) :
 
         #obstacles normaux
-        zones = [[(130, 375), (35, 685), (50, 75), (50, 75)], [(450, 630), (35, 250), (50, 75), (50, 75)], [(705, 950), (35, 685), (50, 75), (50, 75)], [(450, 630), (470, 685), (50, 75), (50, 75)]]
+        zones = [[(130, 415), (135, 585)], [(450, 630), (35, 250)], [(665, 950), (135, 585)], [(450, 630), (470, 685)]]
         for zone in zones : 
             for i in range(random.randint(2, 5)) : 
-                surface = pygame.surface.Surface((random.randint(zone[2][0], zone[2][1]), random.randint(zone[3][0], zone[3][1])))
+                surface = pygame.surface.Surface((random.randint(50, 75), random.randint(50, 75)))
                 surface.fill((200, 200, 0))
                 coords = (random.randint(zone[0][0], zone[0][1]), random.randint(zone[1][0], zone[1][1]))
                 self.walls.add(Obstacle(self.screen, image=surface, coords=coords))
             
         #obstacles rebonds aléatoire 
-        for pos in [(200, 150), (200, 570), (880, 570), (880, 150)] :
+        for pos in [(175, 70), (175, 650), (905, 650), (905, 70)] :
             radius = 25
             surface = pygame.surface.Surface((radius*2, radius*2))
             pygame.draw.circle(surface, (255, 100, 10), (radius, radius), radius)
@@ -88,7 +88,7 @@ class Game :
             self.walls.add(ObstacleRebond(self.screen, image=surface, coords=pos))
 
         #obstacles téléportation de la balle
-        for pos in [(400, 225), (400, 495), (680, 495), (680, 225)] :
+        for pos in [(540, 70), (540, 650)] : 
             radius = 20
             surface = pygame.surface.Surface((radius*2, radius*2))
             pygame.draw.circle(surface, (125, 100, 255), (radius, radius), radius)
@@ -96,6 +96,15 @@ class Game :
             self.walls.add(ObstacleTeleportation(self.screen, image=surface, coords=pos, coords_tp=(540, 360)))
 
         #obstacles en mouvement
+        for pos in [(300, 360), (540, 200), (540, 520), (780, 360)] :
+            size = random.randint(75, 125)
+            size_angle = random.randint(15, 75)*math.pi/180
+            width = math.cos(size_angle)*size
+            height = math.sin(size_angle)*size
+            surface = pygame.surface.Surface((width, height))
+            surface.fill((255, 230, 100))
+            angle = random.randint(0, 360)*math.pi/180
+            self.walls.add(ObstacleMouvant(self.screen, surface, pos, math.cos(angle), -math.sin(angle), 1.5, 250))
 
     def set(self) : 
         self.etat = True
@@ -177,10 +186,9 @@ class Game :
             if self.player_score == 0 and self.bot_score == 0 :
                 sound.game_music.play(loops=-1)
 
-        if self.start == True and self.game_over == False :     
-            #applique le mouvement de la balle
-            self.ball_acceleration()
-            self.ball.apply(self.walls.sprites(), [self.racket, self.racket_ia])
+        if self.start == True and self.game_over == False :  
+            #accélération de la partie
+            self.acceleration()
 
             #applique le mouvement de la raquette du joueur
             self.racket.apply()
@@ -188,6 +196,14 @@ class Game :
             #applique le mouvement de la raquette de l'adversaire
             self.ia_racket_move()
             self.racket_ia.apply()
+
+            #applique le mouvement des obstacles en mouvement
+            for obstacle in self.walls :
+                if type(obstacle) == ObstacleMouvant :
+                    obstacle.apply()
+
+            #applique le mouvement de la balle
+            self.ball.apply(self.walls.sprites(), [self.racket, self.racket_ia])
 
             #timer du jeu
             self.timer = self.return_dt()//1000 + self.timer_save
@@ -297,11 +313,18 @@ class Game :
         return (str(self.player_score) + " - " + str(self.bot_score))
     
     #renvoie le coefficient d'accélération de la balle en fonction du temps
-    def ball_acceleration(self)  :
+    def acceleration(self)  :
+        a = 1 + ((self.timer-self.timer_save)//self.time_up_acceleration)/10
+
         if self.ball.vx*self.ball.a < 12 and self.ball.v < 18 : 
-            self.ball.a = 1 + ((self.timer-self.timer_save)//self.time_up_acceleration)/10
+            self.ball.a = a
 
             if abs(self.racket.a*self.racket.vy) < 12.5 :
-                self.racket.a = 1 + ((self.timer-self.timer_save)//self.time_up_acceleration)/10
-                self.racket_ia.a = 1 + ((self.timer-self.timer_save)//self.time_up_acceleration)/10
+                self.racket.a = a
+                self.racket_ia.a = a
+
+        for obstacle in self.walls :
+            if type(obstacle) == ObstacleMouvant :
+                if obstacle.a < 10 :
+                    obstacle.a = a
         
