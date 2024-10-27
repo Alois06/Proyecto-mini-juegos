@@ -16,6 +16,12 @@ class Sound :
 
         self.alert_sound = pygame.mixer.Sound("assets/sounds/alert.mp3")
 
+        self.victory_sound = pygame.mixer.Sound("assets/sounds/victory_sound.mp3")
+
+        self.draw_sound = pygame.mixer.Sound("assets/sounds/draw_sound.mp3")
+
+        self.defeat_sound = pygame.mixer.Sound("assets/sounds/defeat_sound.mp3")
+
     def stop(self) :
         pygame.mixer.stop()
 
@@ -26,6 +32,9 @@ class Sound :
         self.ball_sound.set_volume(1.0)
         self.countdown_sound.set_volume(1.0)
         self.alert_sound.set_volume(0.75)
+        self.victory_sound.set_volume(1.0)
+        self.draw_sound.set_volume(1.0)
+        self.defeat_sound.set_volume(1.0)
 
     def volume_off(self) : 
         self.background_music.set_volume(0)
@@ -34,6 +43,9 @@ class Sound :
         self.ball_sound.set_volume(0)
         self.countdown_sound.set_volume(0)
         self.alert_sound.set_volume(0)
+        self.victory_sound.set_volume(0)
+        self.draw_sound.set_volume(0)
+        self.defeat_sound.set_volume(0)
 
     def change_volume(self) :
         self.sound_on = not(self.sound_on)

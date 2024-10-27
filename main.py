@@ -1,7 +1,7 @@
 import pygame
 import sys
 
-from game import Game
+from game import Game, GameSolo
 from menu import Menu_Principal, Menu_2players, Menu_Solo
 from sound import sound
 
@@ -37,8 +37,11 @@ menu = Menu_Principal(screen, police1, police2)
 menu_solo = Menu_Solo(screen, police1, police2)
 menu_2players = Menu_2players(screen, police1, police2)
 
-#création de la classe du jeu
-game = Game(screen, police1, police2, police3, police4)
+#création des classes des jeux du mode solo
+game_solo = GameSolo(screen, police1, police2, police3, police4)
+
+#création des classes des jeux du mode multijoueurs
+game_multiplayer = Game(screen, police1, police2, police3, police4)
 
 #DEBUT DE LA BOUCLE DE JEU
 
@@ -70,8 +73,8 @@ while game_on :
             elif menu_solo.etat : 
                 if menu_solo.button_game1.click() :
                     menu_solo.unset()
-                    game = Game(screen, police1, police2, police3, police4)
-                    game.set()
+                    game_solo = GameSolo(screen, police1, police2, police3, police4)
+                    game_solo.set()
                 elif menu_solo.button_return.click() :
                     menu_solo.unset()
                     menu.set()
@@ -79,14 +82,17 @@ while game_on :
             elif menu_2players.etat : 
                 if menu_2players.button_game1.click() :
                     menu_2players.unset()
-                    game = Game(screen, police1, police2, police3, police4)
-                    game.set()
+                    game_multiplayer = Game(screen, police1, police2, police3, police4)
+                    game_multiplayer.set()
                 elif menu_2players.button_return.click() :
                     menu_2players.unset()
                     menu.set()
 
-        elif game.etat : 
-            game.manage_events(event)
+        elif game_solo.etat : 
+            game_solo.manage_events(event)
+
+        elif game_multiplayer.etat :
+            game_multiplayer.manage_events(event)
 
     #affichage de l'image d'arrière plan
     screen.blit(background, (0, 0))
@@ -101,10 +107,16 @@ while game_on :
     elif menu_2players.etat : 
         menu_2players.draw()
 
-    elif game.etat :
-        game.apply() 
-        game.draw()
-        if game.etat == False :
+    elif game_solo.etat :
+        game_solo.apply() 
+        game_solo.draw()
+        if game_solo.etat == False :
+            menu.set()
+
+    elif game_multiplayer.etat :
+        game_multiplayer.apply() 
+        game_multiplayer.draw()
+        if game_multiplayer.etat == False :
             menu.set()
 
     #actualisation de l'écran
