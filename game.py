@@ -56,8 +56,6 @@ class Game :
         pygame.draw.circle(ball_circle, (255, 0, 0), (10, 10), 10)
         self.ball = Ball(self.screen, ball_circle, (540, 360))
 
-        self.ball.a = 1 #coefficient d'accélération de la balle
-
     def create_rackets(self) :
         #création de la raquette du joueur 1
         racket1_rect = pygame.Surface((15, 100))
@@ -276,20 +274,6 @@ class Game :
             elif event.key == pygame.K_RSHIFT:
                 self.racket2.vy *= -1
 
-    #permet le déplacement automatique de la raquette ennemie (bot)
-    def ia_racket_move(self) : 
-        #calcule de la future coordonnée y de la balle en x = 1050
-        prediction = tools.prediction(self.ball.rect.copy(), self.ball.vx, self.ball.vy, self.ball.a, 1050, self.walls.sprites() + [self.racket1])
-        future_ball_coords = prediction[0]
-        future_y_coord = tools.find_y(future_ball_coords, 1050, prediction[1], prediction[2])
-
-        #mouvement automatique de la raquette bot en fonction de cette coordonnée y
-        if future_y_coord < int((self.racket2.rect.top + 2*self.racket2.rect.center[1])/3) and self.racket2.vy > 0 :
-            self.racket2.vy *= -1
-
-        elif future_y_coord > int((self.racket2.rect.bottom + 2*self.racket2.rect.center[1])/3) and self.racket2.vy < 0 :
-            self.racket2.vy *= -1
-
     #renvoie le temps qui s'est écoulé depuis le début de la partie
     def return_dt(self) :
         return pygame.time.get_ticks() - self.time_init
@@ -327,7 +311,7 @@ class Game :
     def acceleration(self)  :
         a = 1 + ((self.timer-self.timer_save)//self.time_up_acceleration)/10
 
-        if self.ball.vx*self.ball.a < 12 and self.ball.v < 18 : 
+        if self.ball.vx*self.ball.a < 12 and self.ball.v < 20 : 
             self.ball.a = a
 
             if abs(self.racket1.a*self.racket1.vy) < 12.5 :

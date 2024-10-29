@@ -3,7 +3,10 @@ def prediction(rect, v_x, v_y, a, x_end, obs) -> tuple :
     obstacles = []
     obstacles_obj = []
     for ob in obs :
-        obstacles.append(ob.rect)
+        if str(type(ob)) == """<class 'objects.ObstacleMouvant'>""" :
+            obstacles.append(ob.rect.copy())
+        else : 
+            obstacles.append(ob.rect)
         obstacles_obj.append(ob)
 
     k_stop = 0
@@ -28,7 +31,13 @@ def prediction(rect, v_x, v_y, a, x_end, obs) -> tuple :
                 vx = -abs(vx)
 
             if rect.collidelist(obstacles) >= 0 :
+                i = 0
                 for obstacle in obstacles : 
+
+                    if str(type(ob)) == """<class 'objects.ObstacleMouvant'>""" :
+                        obs_mouvant = obstacles_obj[i]
+                        obstacle.x += obs_mouvant.vx*obs_mouvant.a
+                        obstacle.y += obs_mouvant.vy*obs_mouvant.a
 
                     if rect.colliderect(obstacle) :
 
@@ -111,6 +120,8 @@ def prediction(rect, v_x, v_y, a, x_end, obs) -> tuple :
                                 else : 
                                     comparaison = compare_impact(dx, dy, vx, vy)
                                     vx, vy = comparaison[0], comparaison[1]
+
+                    i += 1
 
             rect.x += vx*a
             rect.y += vy*a
