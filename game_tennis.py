@@ -1,6 +1,4 @@
 import pygame
-import pytmx
-import pyscroll
 import random
 import math
 

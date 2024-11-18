@@ -6,6 +6,7 @@ from sound import sound
 
 #Objets pour le jeu de raquette
 
+#classe de la balle pour le jeu de raquettes
 class Ball :
     def __init__(self, screen, image: pygame.Surface, coords) : 
         self.screen = screen
@@ -150,6 +151,7 @@ class Ball :
     def draw(self) : 
         self.screen.blit(self.image, self.rect)
 
+#classe mère pour les sprites bougeant de haut en bas (raquettes, joueurs tirs, etc)
 class SpriteY(pygame.sprite.Sprite) :
     def __init__(self, screen, image: pygame.Surface, coords) :
         super().__init__()
@@ -178,6 +180,7 @@ class SpriteY(pygame.sprite.Sprite) :
 
         self.move()    
 
+#classe de la raquette pour le jeu de tennis
 class Racket(SpriteY) : 
     def __init__(self, screen, image: pygame.Surface, coords):
         super().__init__(screen, image, coords)
@@ -188,6 +191,15 @@ class Racket(SpriteY) :
     def move(self) :
         self.rect.y += self.vy*self.a
 
+#classe du joueur pour le jeu de tir
+class PlayerShooter(SpriteY) : 
+    def __init__(self, screen, image: pygame.Surface, coords):
+        super().__init__(screen, image, coords)
+    
+    def attack(self) : 
+        self.vy *= -1
+
+#classe mère obstacle
 class Obstacle(pygame.sprite.Sprite) :
     def __init__(self, screen, image:pygame.surface.Surface, coords) :
 
