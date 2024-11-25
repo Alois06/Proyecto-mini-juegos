@@ -195,9 +195,37 @@ class Racket(SpriteY) :
 class PlayerShooter(SpriteY) : 
     def __init__(self, screen, image: pygame.Surface, coords):
         super().__init__(screen, image, coords)
+
+        #vie du joueur
+        self.life = 3
+
+        #projectiles
+        self.image_projectile = pygame.image.load("assets/bullet.png")
+        self.image_projectile = self.image_projectile.subsurface((250, 90, 200, 100))
+        self.image_projectile = pygame.transform.scale(self.image_projectile, (60, 30))
+        self.projectiles = []
+        self.time_last_shot = pygame.time.get_ticks()
+
+    def apply(self):
+        super().apply()
+    
+        #mouvement des projectiles
+        for bullet in self.projectiles : 
+            bullet.apply([], [])
     
     def attack(self) : 
+        #inverse le sens du mouvement
         self.vy *= -1
+        #lance un projectile
+        if self.delay() : 
+            self.time_last_shot = pygame.time.get_ticks()
+            projectile = Ball(self.screen, self.image_projectile, self.rect.center)
+            projectile.vx = 5
+            projectile.vy = 0
+            self.projectiles.append(projectile)
+
+    def delay(self) : 
+        return pygame.time.get_ticks() - self.time_last_shot >= 1000
 
 #classe mère obstacle
 class Obstacle(pygame.sprite.Sprite) :

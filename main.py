@@ -40,9 +40,11 @@ menu_2players = Menu_2players(screen, police1, police2)
 
 #création des classes des jeux du mode solo
 game_tennis_solo = game_tennis.GameSolo(screen, police1, police2, police3, police4)
+game_shots_solo = game_shots.GameSolo(screen, police1, police2, police3, police4)
 
 #création des classes des jeux du mode multijoueurs
 game_tennis_multiplayer = game_tennis.Game(screen, police1, police2, police3, police4)
+game_shots_multiplayer = game_shots.Game(screen, police1, police2, police3, police4)
 
 #DEBUT DE LA BOUCLE DE JEU
 
@@ -62,38 +64,65 @@ while game_on :
 
         #vérifie si un bouton est appuyé
         if event.type == pygame.MOUSEBUTTONDOWN :
-
+            
+            #menu principal
             if menu.etat : 
+                #bouton solo
                 if menu.button_play_solo.click() :
                     menu.unset()
                     menu_solo.set()
+                #bouton multijoueur
                 elif menu.button_play_2_players.click():
                     menu.unset()
                     menu_2players.set()
             
+            #menu solo
             elif menu_solo.etat : 
+                #jeu de raquettes
                 if menu_solo.button_game1.click() :
                     menu_solo.unset()
                     game_tennis_solo = game_tennis.GameSolo(screen, police1, police2, police3, police4)
                     game_tennis_solo.set()
+                #jeu de tirs
+                elif menu_solo.button_game2.click() : 
+                    menu_solo.unset()
+                    game_shots_solo = game_shots.GameSolo(screen, police1, police2, police3, police4)
+                    game_shots_solo.set()
+                #retour au menu principal
                 elif menu_solo.button_return.click() :
                     menu_solo.unset()
                     menu.set()
 
+            #menu multijoueur
             elif menu_2players.etat : 
+                #jeu de raquettes
                 if menu_2players.button_game1.click() :
                     menu_2players.unset()
                     game_tennis_multiplayer = game_tennis.Game(screen, police1, police2, police3, police4)
                     game_tennis_multiplayer.set()
+                #jeu de tirs
+                elif menu_2players.button_game2.click() : 
+                    menu_2players.unset()
+                    game_shots_multiplayer = game_shots.Game(screen, police1, police2, police3, police4)
+                    game_shots_multiplayer.set()
+                #retour au menu principal
                 elif menu_2players.button_return.click() :
                     menu_2players.unset()
                     menu.set()
 
+        #évènements pour les jeux de tennis
         elif game_tennis_solo.etat : 
             game_tennis_solo.manage_events(event)
 
         elif game_tennis_multiplayer.etat :
             game_tennis_multiplayer.manage_events(event)
+
+        #évènements pour les jeux de tirs
+        elif game_shots_solo.etat : 
+            game_shots_solo.manage_events(event)
+
+        elif game_shots_multiplayer.etat :
+            game_shots_multiplayer.manage_events(event)
 
     #affichage de l'image d'arrière plan
     screen.blit(background, (0, 0))
@@ -118,6 +147,18 @@ while game_on :
         game_tennis_multiplayer.apply() 
         game_tennis_multiplayer.draw()
         if game_tennis_multiplayer.etat == False :
+            menu.set()
+
+    elif game_shots_solo.etat : 
+        game_shots_solo.apply()
+        game_shots_solo.draw()
+        if game_shots_solo.etat == False : 
+            menu.set()
+
+    elif game_shots_multiplayer.etat : 
+        game_shots_multiplayer.apply()
+        game_shots_multiplayer.draw()
+        if game_shots_multiplayer.etat == False : 
             menu.set()
 
     #actualisation de l'écran
