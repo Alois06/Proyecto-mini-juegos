@@ -151,6 +151,25 @@ class Ball :
     def draw(self) : 
         self.screen.blit(self.image, self.rect)
 
+#classe pour les projectiles
+class Projectile(Ball) : 
+    def __init__(self, screen, image, coords):
+        super().__init__(screen, image, coords)
+
+        #sert pour la rotation de l'image
+        self.image_origine = image
+        self.angle = 0
+
+    def apply(self) : 
+        #fonction move de la classe mère
+        super().apply([], [])
+
+        #modification de l'orientation de l'image
+        self.angle = tools.return_angle(self.vx, self.vy)
+        img = self.image_origine.copy()
+        img = pygame.transform.rotate(img, self.angle)
+        self.image = img
+
 #classe mère pour les sprites bougeant de haut en bas (raquettes, joueurs tirs, etc)
 class SpriteY(pygame.sprite.Sprite) :
     def __init__(self, screen, image: pygame.Surface, coords) :
@@ -206,12 +225,13 @@ class PlayerShooter(SpriteY) :
         self.projectiles = []
         self.time_last_shot = pygame.time.get_ticks()
 
+        #direction de la balle
+        self.coeff_directeur = 1
+        if coords[0] > 540 : 
+            self.coeff_directeur = -1
+
     def apply(self):
         super().apply()
-    
-        #mouvement des projectiles
-        for bullet in self.projectiles : 
-            bullet.apply([], [])
     
     def attack(self) : 
         #inverse le sens du mouvement
@@ -219,8 +239,8 @@ class PlayerShooter(SpriteY) :
         #lance un projectile
         if self.delay() : 
             self.time_last_shot = pygame.time.get_ticks()
-            projectile = Ball(self.screen, self.image_projectile, self.rect.center)
-            projectile.vx = 5
+            projectile = Projectile(self.screen, self.image_projectile, self.rect.center)
+            projectile.vx = 5*self.coeff_directeur
             projectile.vy = 0
             self.projectiles.append(projectile)
 

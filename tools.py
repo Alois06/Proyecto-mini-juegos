@@ -1,3 +1,5 @@
+import math
+
 def prediction(rect, v_x, v_y, a, x_end, obs) -> tuple :
 
     obstacles = []
@@ -146,3 +148,16 @@ def compare_impact(dx, dy, vx, vy) :
         vx *= -1
 
     return  [vx, vy]
+
+#permet de renvoyer l'angle en fonction des coordonnées du vecteur directeur
+def return_angle(vx, vy) : 
+    v = math.sqrt(vx**2 + vy**2)
+    if v != 0 :
+        cos = vx/v
+        sin = vy/v
+        angle = 180*math.acos(cos)/math.pi
+        if sin < 0 : 
+            angle *= -1
+        return angle
+    else : 
+        return 0

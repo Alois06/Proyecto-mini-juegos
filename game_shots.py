@@ -13,11 +13,19 @@ class Game :
 
         self.etat = False
 
+        self.game_over_etat = False
+
         #polices
         self.police1 = police1
         self.police2 = police2
         self.police3 = police3
         self.police4 = police4
+
+        #variables de temps
+        self.time_start = pygame.time.get_ticks()
+        self.time_start_game_over = None
+        self.start_countdown_delay = 5000
+        self.end_countdown_delay = 10000
 
         #image de fond d'écran
         self.background = pygame.image.load("assets/background_désert.PNG")
@@ -70,24 +78,61 @@ class Game :
 
     #affiche les éléments de la partie
     def draw(self) :
+
         #affiche le fond d'écran
         self.screen.blit(self.background, (0,0))
 
-        #affiche les deux joueurs
-        self.player1.draw()
-        self.player2.draw()
+        #affichage de la partie tant que celle-ci n'est pas finie
+        if not(self.game_over_etat) : 
+            
+            #affiche les deux joueurs
+            self.player1.draw()
+            self.player2.draw()
 
-        #affichage des projectiles
-        for bullet in self.player1.projectiles :
-            bullet.draw()
-        for bullet in self.player2.projectiles :
-            bullet.draw()
+            #affichage des projectiles
+            for bullet in self.player1.projectiles :
+                bullet.draw()
+            for bullet in self.player2.projectiles :
+                bullet.draw()
+
+        else : 
+            pass
 
     #applique les actions de la partie
     def apply(self) :
-        #applique les actions des joueurs
-        self.player1.apply()
-        self.player2.apply()
+
+        #actions de la partie tant que celle-ci n'est pas finie
+        if not(self.game_over_etat) : 
+            #applique les actions des joueurs
+            self.player1.apply()
+            self.player2.apply()
+
+            #mouvement des projectiles
+            for bullet in self.player1.projectiles : 
+                bullet.apply()
+                if bullet.rect.colliderect(self.player2.rect) : 
+                    self.player1.projectiles.remove(bullet)
+                    self.player2.life -= 1
+                if bullet.rect.left <= 0 or bullet.rect.right >= 1080 :
+                    self.player1.projectiles.remove(bullet)
+
+            for bullet in self.player2.projectiles :
+                bullet.apply()
+                if bullet.rect.colliderect(self.player1.rect) : 
+                    self.player2.projectiles.remove(bullet)
+                    self.player1.life -= 1
+                if bullet.rect.left <= 0 or bullet.rect.right >= 1080:
+                    self.player2.projectiles.remove(bullet)
+
+            #fin de la partie
+            if self.player1.life <= 0 : 
+                self.game_over(2)
+            elif self.player2.life <= 0 : 
+                self.game_over(1)
+
+        else : 
+            if self.end_countdown() == True : 
+                self.unset()
 
     #contrôle les évènements en lien avec la partie
     def manage_events(self, event) : 
@@ -98,6 +143,16 @@ class Game :
             #bouton du joueur 2
             elif event.key == pygame.K_p : 
                 self.player2.attack()
+
+    def game_over(self, joueur) : 
+        self.game_over_etat = True
+        self.time_start_game_over = pygame.time.get_ticks()
+
+    def start_countdown(self) : 
+        pass
+
+    def end_countdown(self) : 
+        return pygame.time.get_ticks() - self.time_start_game_over >= self.end_countdown_delay 
 
 class GameSolo(Game) : 
     def __init__(self, screen, police1, police2, police3, police4):
