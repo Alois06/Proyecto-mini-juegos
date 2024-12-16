@@ -3,7 +3,7 @@ import random
 import math
 
 from sound import sound
-from objects import PlayerShooter, Obstacle
+from objects import PlayerShooter, Obstacle, ObstacleMouvant, ObstacleRebond
 import tools
 
 #classe de la partie normale
@@ -31,6 +31,9 @@ class Game :
         self.background = pygame.image.load("assets/background_désert.PNG")
         self.background = pygame.transform.scale(self.background, (1080, 720))
 
+        self.image_cactus = pygame.image.load("assets/cactus.png")
+        self.image_cactus = pygame.transform.scale(self.image_cactus, (96, 96))
+
         #joueurs
         self.player1 = None
         self.player2 = None
@@ -56,9 +59,22 @@ class Game :
         image2.set_colorkey((255, 255, 255))
         self.player2 = PlayerShooter(self.screen, image2, (1000, 360))
 
-    #création des deux obstacles
+    #création des obstacles
     def create_obstacles(self) : 
-        pass
+
+        #obstacles mouvants
+        surface = pygame.surface.Surface((40, 150))
+        surface.fill((255, 230, 100))
+        self.walls.append(ObstacleMouvant(self.screen, surface, (480, 360), 0, -1, 2, 300))
+        self.walls.append(ObstacleMouvant(self.screen, surface, (600, 360), 0, 1, 2, 300))
+
+        #obstacles normaux à rebonds
+        surfaces = [[250, 25, 150, 670], [650, 25, 150, 670]]
+        for s in surfaces : 
+            for i in range(random.randint (2, 5)) : 
+                x = random.randint(s[0], s[0] + s[2])
+                y = random.randint(s[1], s[1] + s[3])
+                self.walls.append(ObstacleRebond(self.screen, self.image_cactus, (x,y)))
 
     def set(self) : 
         self.etat = True
@@ -84,6 +100,10 @@ class Game :
 
         #affichage de la partie tant que celle-ci n'est pas finie
         if not(self.game_over_etat) : 
+
+            #affiche les obstacles
+            for obstacle in self.walls : 
+                obstacle.draw()
             
             #affiche les deux joueurs
             self.player1.draw()
@@ -103,13 +123,19 @@ class Game :
 
         #actions de la partie tant que celle-ci n'est pas finie
         if not(self.game_over_etat) : 
+
+            #applique les actions des obstacles
+            for obstacle in self.walls : 
+                if type(obstacle) == ObstacleMouvant : 
+                    obstacle.apply()
+
             #applique les actions des joueurs
             self.player1.apply()
             self.player2.apply()
 
             #mouvement des projectiles
             for bullet in self.player1.projectiles : 
-                bullet.apply()
+                bullet.apply(self.walls)
                 if bullet.rect.colliderect(self.player2.rect) : 
                     self.player1.projectiles.remove(bullet)
                     self.player2.life -= 1
@@ -117,7 +143,7 @@ class Game :
                     self.player1.projectiles.remove(bullet)
 
             for bullet in self.player2.projectiles :
-                bullet.apply()
+                bullet.apply(self.walls)
                 if bullet.rect.colliderect(self.player1.rect) : 
                     self.player2.projectiles.remove(bullet)
                     self.player1.life -= 1

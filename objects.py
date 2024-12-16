@@ -160,14 +160,14 @@ class Projectile(Ball) :
         self.image_origine = image
         self.angle = 0
 
-    def apply(self) : 
+    def apply(self, walls:list) : 
         #fonction move de la classe mère
-        super().apply([], [])
+        super().apply(walls, [])
 
         #modification de l'orientation de l'image
         self.angle = tools.return_angle(self.vx, self.vy)
         img = self.image_origine.copy()
-        img = pygame.transform.rotate(img, self.angle)
+        img = pygame.transform.rotate(img, self.angle*(-1))
         self.image = img
 
 #classe mère pour les sprites bougeant de haut en bas (raquettes, joueurs tirs, etc)
@@ -225,21 +225,31 @@ class PlayerShooter(SpriteY) :
         self.projectiles = []
         self.time_last_shot = pygame.time.get_ticks()
 
+        self.coords_tirs = ()
+
         #direction de la balle
         self.coeff_directeur = 1
         if coords[0] > 540 : 
             self.coeff_directeur = -1
 
+        self.actualize_coords_tirs()
+
     def apply(self):
         super().apply()
-    
+
+    def actualize_coords_tirs(self) : 
+        self.coords_tirs = (self.rect.x + 126, self.rect.y + 60)
+        if self.rect.x > 540 : 
+            self.coords_tirs = (self.rect.right - 126, self.rect.y + 60)
+
     def attack(self) : 
         #inverse le sens du mouvement
         self.vy *= -1
         #lance un projectile
         if self.delay() : 
             self.time_last_shot = pygame.time.get_ticks()
-            projectile = Projectile(self.screen, self.image_projectile, self.rect.center)
+            self.actualize_coords_tirs()
+            projectile = Projectile(self.screen, self.image_projectile, self.coords_tirs)
             projectile.vx = 5*self.coeff_directeur
             projectile.vy = 0
             self.projectiles.append(projectile)
@@ -270,8 +280,16 @@ class ObstacleRebond(Obstacle) :
         super().__init__(screen, image, coords)
 
     def effect(self, ball:Ball) :
-        x_sign = ball.vx/abs(ball.vx)
-        y_sign = ball.vy/abs(ball.vy)
+
+        if ball.vx != 0 :
+            x_sign = ball.vx/abs(ball.vx)
+        else : 
+            x_sign = 1
+
+        if ball.vy != 0 :
+            y_sign = ball.vy/abs(ball.vy)
+        else : 
+            y_sign = 1
 
         ball.vx = random.randint(2, 5)*x_sign
         ball.vy = random.randint(2, 5)*y_sign
