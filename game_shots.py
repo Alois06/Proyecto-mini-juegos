@@ -63,13 +63,13 @@ class Game :
     def create_obstacles(self) : 
 
         #obstacles mouvants
-        surface = pygame.surface.Surface((40, 150))
+        surface = pygame.surface.Surface((25, 125))
         surface.fill((255, 230, 100))
-        self.walls.append(ObstacleMouvant(self.screen, surface, (480, 360), 0, -1, 2, 300))
-        self.walls.append(ObstacleMouvant(self.screen, surface, (600, 360), 0, 1, 2, 300))
+        self.walls.append(ObstacleMouvant(self.screen, surface, (450, 360), 0, -1, 5, 400))
+        self.walls.append(ObstacleMouvant(self.screen, surface, (630, 360), 0, 1, 5, 400))
 
         #obstacles normaux à rebonds
-        surfaces = [[250, 25, 150, 670], [650, 25, 150, 670]]
+        surfaces = [[225, 75, 150, 620], [705, 75, 150, 620]]
         for s in surfaces : 
             for i in range(random.randint (2, 5)) : 
                 x = random.randint(s[0], s[0] + s[2])
@@ -134,21 +134,8 @@ class Game :
             self.player2.apply()
 
             #mouvement des projectiles
-            for bullet in self.player1.projectiles : 
-                bullet.apply(self.walls)
-                if bullet.rect.colliderect(self.player2.rect) : 
-                    self.player1.projectiles.remove(bullet)
-                    self.player2.life -= 1
-                if bullet.rect.left <= 0 or bullet.rect.right >= 1080 :
-                    self.player1.projectiles.remove(bullet)
-
-            for bullet in self.player2.projectiles :
-                bullet.apply(self.walls)
-                if bullet.rect.colliderect(self.player1.rect) : 
-                    self.player2.projectiles.remove(bullet)
-                    self.player1.life -= 1
-                if bullet.rect.left <= 0 or bullet.rect.right >= 1080:
-                    self.player2.projectiles.remove(bullet)
+            self.apply_projectiles(self.player1)
+            self.apply_projectiles(self.player2)
 
             #fin de la partie
             if self.player1.life <= 0 : 
@@ -159,6 +146,23 @@ class Game :
         else : 
             if self.end_countdown() == True : 
                 self.unset()
+
+    #applique le déplacement et les collisions des projectiles du joueur donné en paramètre
+    def apply_projectiles(self, player:PlayerShooter) : 
+
+        for bullet in player.projectiles : 
+
+            bullet.apply(self.walls)
+
+            if bullet.rect.colliderect(self.player1.rect) : 
+                player.projectiles.remove(bullet)
+                self.player1.life -= 1
+            elif bullet.rect.colliderect(self.player2.rect) : 
+                player.projectiles.remove(bullet)
+                self.player2.life -= 1
+
+            if bullet.rect.left <= 0 or bullet.rect.right >= 1080 :
+                player.projectiles.remove(bullet)
 
     #contrôle les évènements en lien avec la partie
     def manage_events(self, event) : 
@@ -183,3 +187,88 @@ class Game :
 class GameSolo(Game) : 
     def __init__(self, screen, police1, police2, police3, police4):
         super().__init__(screen, police1, police2, police3, police4)
+
+        #player 1 est le joueur
+        #player 2 est l'ia
+
+    #affiche les éléments de la partie à l'écran
+    def draw(self) :
+        super().draw()
+
+    #applique les actions de la partie
+    def apply(self):
+
+        if not(self.game_over_etat) :
+            self.ia_move()
+
+        super().apply()
+
+    #gère les évènements de la partie
+    def manage_events(self, event):
+        #tir du joueur
+        if event.type == pygame.KEYDOWN : 
+            if event.key == pygame.K_SPACE : 
+                self.player1.attack()
+
+    #gère les déplacements et actions de l'ia
+    def ia_move(self) : 
+
+        #récupération de la future position des balles
+        bullets = []
+        liste_d = []
+        liste_dy = []
+        
+        #on étudie la position et autres caractéristiques des projectiles pour les éviter
+        for bullet in self.player1.projectiles + self.player2.projectiles : 
+
+            #on calcule la position future du projectile en x = 950
+            prediction = tools.prediction(bullet.rect.copy(), bullet.vx, bullet.vy, 1, 950, self.walls, 15)
+
+            if prediction[1] > 0 : 
+                future_y_coords = tools.find_y(prediction[0], 950, prediction[1], prediction[2])
+                bullets.append((prediction[0], (950, future_y_coords)))
+
+                #on détermine la distance entre la balle et sa future position
+                norme = tools.norme(prediction[0], (950, future_y_coords))
+
+                #on détermine l'écart entre l'ordonnée du personnage de l'ia et la future ordonnée du projectile
+                dy = 0
+                if future_y_coords <= self.player2.rect.bottom and future_y_coords >= self.player2.rect.top :
+                    if self.player2.rect.bottom <= 150 : 
+                        dy = future_y_coords - self.player2.rect.bottom
+                    elif self.player2.rect.top >= 570 : 
+                        dy = future_y_coords - self.player2.rect.top
+                else : 
+                    dy = future_y_coords - self.player2.rect.centery
+
+                """
+                for i in range(len(liste_d)) :
+                    if liste_d[i] == norme
+                """
+                liste_d.append(norme)
+                liste_dy.append(dy)
+
+        #on en déduit le mouvement à adopter pour éviter la balle la plus dangereuse
+        min_dy = None
+
+        if len(liste_d) > 0 :
+            min_d = min(liste_d)
+            min_dy = liste_dy[liste_d.index(min_d)]
+
+            if abs(min_dy) <= 250 and tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 900): 
+
+                if min_dy < 0 and self.player2.vy < 0 :
+                    self.player2.attack()
+                
+                elif min_dy > 0 and self.player2.vy > 0 :
+                    self.player2.attack()
+
+        else : 
+            min_dy = 720
+
+        #déplacement pour tirer
+        if self.player2.delay() and abs(min_dy) >= 250 and tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 270): 
+            if self.player1.rect.top > self.player2.rect.bottom and self.player1.vy < 0 :
+                self.player2.attack()
+            elif self.player1.rect.bottom < self.player2.rect.top and self.player1.vy > 0 : 
+                self.player2.attack()

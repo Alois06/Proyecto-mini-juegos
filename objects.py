@@ -144,6 +144,11 @@ class Ball :
                     if type(obstacle_obj) == ObstacleRebond or type(obstacle_obj) == ObstacleTeleportation :
                         obstacle_obj.effect(self)
 
+                    #pour éviter que la balle reste coincée dans un obstacle en mouvement
+                    elif type(obstacle_obj) == ObstacleMouvant : 
+                        for i in range(3) : 
+                            self.move()
+
             #Applique le mouvement de la balle
             self.move()
 
@@ -224,6 +229,7 @@ class PlayerShooter(SpriteY) :
         self.image_projectile = pygame.transform.scale(self.image_projectile, (60, 30))
         self.projectiles = []
         self.time_last_shot = pygame.time.get_ticks()
+        self.max_projectiles = 3
 
         self.coords_tirs = ()
 
@@ -246,7 +252,7 @@ class PlayerShooter(SpriteY) :
         #inverse le sens du mouvement
         self.vy *= -1
         #lance un projectile
-        if self.delay() : 
+        if self.delay() and len(self.projectiles) < self.max_projectiles : 
             self.time_last_shot = pygame.time.get_ticks()
             self.actualize_coords_tirs()
             projectile = Projectile(self.screen, self.image_projectile, self.coords_tirs)
@@ -255,7 +261,7 @@ class PlayerShooter(SpriteY) :
             self.projectiles.append(projectile)
 
     def delay(self) : 
-        return pygame.time.get_ticks() - self.time_last_shot >= 1000
+        return pygame.time.get_ticks() - self.time_last_shot >= 750
 
 #classe mère obstacle
 class Obstacle(pygame.sprite.Sprite) :

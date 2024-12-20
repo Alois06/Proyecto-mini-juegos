@@ -392,7 +392,7 @@ class GameSolo(Game) :
     #permet le déplacement automatique de la raquette ennemie (bot)
     def ia_racket_move(self) : 
         #calcule de la future coordonnée y de la balle en x = 1050
-        prediction = tools.prediction(self.ball.rect.copy(), self.ball.vx, self.ball.vy, self.ball.a, 1050, self.walls.sprites() + [self.racket1])
+        prediction = tools.prediction(self.ball.rect.copy(), self.ball.vx, self.ball.vy, self.ball.a, 1050, self.walls.sprites() + [self.racket1], 50)
         future_ball_coords = prediction[0]
         future_y_coord = tools.find_y(future_ball_coords, 1050, prediction[1], prediction[2])
 

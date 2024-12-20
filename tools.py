@@ -1,6 +1,7 @@
 import math
+import pygame
 
-def prediction(rect, v_x, v_y, a, x_end, obs) -> tuple :
+def prediction(rect, v_x, v_y, a, x_end, obs, nb_tours) -> tuple :
 
     obstacles = []
     obstacles_obj = []
@@ -16,7 +17,7 @@ def prediction(rect, v_x, v_y, a, x_end, obs) -> tuple :
     vx = v_x
     vy = v_y
 
-    while k_stop < 50 : 
+    while k_stop < nb_tours : 
 
         if rect.right < x_end :
 
@@ -161,3 +162,20 @@ def return_angle(vx, vy) :
         return angle
     else : 
         return 0
+
+#renvoie la distance entre deux points
+def norme(A:tuple, B:tuple) :
+    vx = B[0] - A[0]
+    vy = B[1] - A[1]
+    return math.sqrt(vx**2 + vy**2) 
+
+#vérifie si un projectile va toucher un obstacle sur sa trajectoire
+def verification(obstacles:list, coords, rect:pygame.rect.Rect, vx, x_objectif) : 
+    rect.center = coords
+    while rect.left > x_objectif :
+        if rect.collidelist(obstacles) :
+            return False
+        else : 
+            rect.x += vx
+    
+    return True
