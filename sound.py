@@ -22,6 +22,12 @@ class Sound :
 
         self.defeat_sound = pygame.mixer.Sound("assets/sounds/defeat_sound.mp3")
 
+        self.shot_sound = pygame.mixer.Sound("assets/sounds/tir.mp3")
+
+        self.explosion_sound = pygame.mixer.Sound("assets/sounds/explosion.mp3")
+
+        self.game_music4 = pygame.mixer.Sound("assets/sounds/game_music4.mp3")
+
     def stop(self) :
         pygame.mixer.stop()
 
@@ -35,6 +41,9 @@ class Sound :
         self.victory_sound.set_volume(1.0)
         self.draw_sound.set_volume(1.0)
         self.defeat_sound.set_volume(1.0)
+        self.shot_sound.set_volume(1.0)
+        self.explosion_sound.set_volume(1.0)
+        self.game_music4.set_volume(1.0)
 
     def volume_off(self) : 
         self.background_music.set_volume(0)
@@ -46,6 +55,9 @@ class Sound :
         self.victory_sound.set_volume(0)
         self.draw_sound.set_volume(0)
         self.defeat_sound.set_volume(0)
+        self.shot_sound.set_volume(0)
+        self.explosion_sound.set_volume(0)
+        self.game_music4.set_volume(0)
 
     def change_volume(self) :
         self.sound_on = not(self.sound_on)

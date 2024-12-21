@@ -8,11 +8,13 @@ import tools
 
 #classe de la partie normale
 class Game :
-    def __init__(self, screen, police1, police2, police3, police4) :
+    def __init__(self, screen:pygame.surface.Surface, police1:pygame.font.Font, police2:pygame.font.Font, police3:pygame.font.Font, police4:pygame.font.Font) :
         self.screen = screen
 
+        #l'état de la partie -> True : la partie est en cours | False : la partie n'est pas/plus en cours
         self.etat = False
 
+        #indique True si la partie se termine et False si elle ne s'est pas encore terminée
         self.game_over_etat = False
 
         #polices
@@ -24,19 +26,21 @@ class Game :
         #variables de temps
         self.time_start = pygame.time.get_ticks()
         self.time_start_game_over = None
-        self.start_countdown_delay = 5000
-        self.end_countdown_delay = 10000
+        self.end_countdown_delay = 5000
 
         #image de fond d'écran
         self.background = pygame.image.load("assets/background_désert.PNG")
         self.background = pygame.transform.scale(self.background, (1080, 720))
 
-        self.image_cactus = pygame.image.load("assets/cactus.png")
-        self.image_cactus = pygame.transform.scale(self.image_cactus, (96, 96))
+        #image du cactus
+        self.image_cactus = pygame.image.load("assets/cactus.png").subsurface(80, 52, 376, 420)
+        self.image_cactus = pygame.transform.scale(self.image_cactus, (72, 80))
 
         #joueurs
         self.player1 = None
         self.player2 = None
+
+        self.vainqueur = 0
 
         #obstacles
         self.walls = []
@@ -47,10 +51,11 @@ class Game :
 
     #création des deux joueurs
     def create_players(self) : 
-        image_players = pygame.image.load("assets/cowboy.png")
+        #image_players = pygame.image.load("assets/cowboy.png").subsurface(32, 32, 176, 264)
+        image_players = pygame.image.load("assets/cowboy.png").subsurface(32, 32, 660, 990)
 
         image1 = image_players.copy()
-        image1 = pygame.transform.scale(image_players, (96, 96))
+        image1 = pygame.transform.scale(image_players, (72, 96))
         image1.set_colorkey((255, 255, 255))
         self.player1 = PlayerShooter(self.screen, image1, (80, 360))
 
@@ -76,19 +81,23 @@ class Game :
                 y = random.randint(s[1], s[1] + s[3])
                 self.walls.append(ObstacleRebond(self.screen, self.image_cactus, (x,y)))
 
+    #active le début de la partie et change les sons
     def set(self) : 
+        #change l'état de la partie à True pour l'activer
         self.etat = True
 
+        #lance la musique de la partie
         sound.background_music.stop()
-        sound.countdown_sound.play()
+        sound.game_music4.play(loops=-1)
 
+    #active la fin de la partie et le retour au menu principal et change les sons
     def unset(self) :
+        #change l'état de la partie à False pour la quitter et revenir au menu principal
         self.etat = False
 
-        sound.game_music.stop()
-        sound.countdown_sound.stop()
+        #stop tous les sons et relance le son du menu principal
+        sound.game_music4.stop()
         sound.victory_sound.stop()
-        sound.draw_sound.stop()
         sound.defeat_sound.stop()
         sound.background_music.play(loops=-1)
 
@@ -116,7 +125,8 @@ class Game :
                 bullet.draw()
 
         else : 
-            pass
+            txt = self.police4.render("PLAYER " + str(self.vainqueur) + " WON !", False, (255, 255, 255))
+            self.screen.blit(txt, (400, 300))
 
     #applique les actions de la partie
     def apply(self) :
@@ -157,12 +167,16 @@ class Game :
             if bullet.rect.colliderect(self.player1.rect) : 
                 player.projectiles.remove(bullet)
                 self.player1.life -= 1
+                sound.explosion_sound.play()
+
             elif bullet.rect.colliderect(self.player2.rect) : 
                 player.projectiles.remove(bullet)
                 self.player2.life -= 1
+                sound.explosion_sound.play()
 
-            if bullet.rect.left <= 0 or bullet.rect.right >= 1080 :
+            elif bullet.rect.left <= 0 or bullet.rect.right >= 1080 :
                 player.projectiles.remove(bullet)
+                sound.explosion_sound.play()
 
     #contrôle les évènements en lien avec la partie
     def manage_events(self, event) : 
@@ -174,13 +188,21 @@ class Game :
             elif event.key == pygame.K_p : 
                 self.player2.attack()
 
+    #initie la fin de partie
     def game_over(self, joueur) : 
+        #indique que la partie est terminée
         self.game_over_etat = True
+
         self.time_start_game_over = pygame.time.get_ticks()
 
-    def start_countdown(self) : 
-        pass
+        #sons
+        sound.game_music4.stop()
+        sound.victory_sound.play()
 
+        #enregistre le joueur vainqueur
+        self.vainqueur = joueur
+
+    #renvoie True si le délai pour l'affichage de fin de partie s'est achevé
     def end_countdown(self) : 
         return pygame.time.get_ticks() - self.time_start_game_over >= self.end_countdown_delay 
 
@@ -193,7 +215,20 @@ class GameSolo(Game) :
 
     #affiche les éléments de la partie à l'écran
     def draw(self) :
-        super().draw()
+        
+        #affiche le fond d'écran
+        self.screen.blit(self.background, (0,0))
+
+        #affichage de la partie tant que celle-ci n'est pas finie
+        if not(self.game_over_etat) : 
+            super().draw()
+        else : 
+            txt = ""
+            if self.vainqueur == 1 : 
+                txt = self.police4.render("YOU WON !", False, (255, 255, 255))
+            else : 
+                txt = self.police4.render("YOU LOSE !", False, (255, 255, 255))
+            self.screen.blit(txt, (400, 300))
 
     #applique les actions de la partie
     def apply(self):
@@ -209,6 +244,21 @@ class GameSolo(Game) :
         if event.type == pygame.KEYDOWN : 
             if event.key == pygame.K_SPACE : 
                 self.player1.attack()
+
+    #fonction de fin de partie
+    def game_over(self, joueur):
+        self.game_over_etat = True
+        self.time_start_game_over = pygame.time.get_ticks()
+        
+        #enregistre le joueur vainqueur
+        self.vainqueur = joueur
+
+        #sons
+        sound.game_music4.stop()
+        if joueur == 1 : 
+            sound.victory_sound.play()
+        else : 
+            sound.defeat_sound.play()
 
     #gère les déplacements et actions de l'ia
     def ia_move(self) : 

@@ -175,6 +175,11 @@ class Projectile(Ball) :
         img = pygame.transform.rotate(img, self.angle*(-1))
         self.image = img
 
+        #nouveau rectangle
+        coords = self.rect.center
+        self.rect = self.image.get_rect()
+        self.rect.center = coords
+
 #classe mère pour les sprites bougeant de haut en bas (raquettes, joueurs tirs, etc)
 class SpriteY(pygame.sprite.Sprite) :
     def __init__(self, screen, image: pygame.Surface, coords) :
@@ -225,11 +230,12 @@ class PlayerShooter(SpriteY) :
 
         #projectiles
         self.image_projectile = pygame.image.load("assets/bullet.png")
-        self.image_projectile = self.image_projectile.subsurface((250, 90, 200, 100))
-        self.image_projectile = pygame.transform.scale(self.image_projectile, (60, 30))
+        self.image_projectile = self.image_projectile.subsurface((256, 90, 152, 64))
+        self.image_projectile = pygame.transform.scale(self.image_projectile, (48, 20))
+        self.image_projectile.set_colorkey((0,0,0))
         self.projectiles = []
         self.time_last_shot = pygame.time.get_ticks()
-        self.max_projectiles = 3
+        self.max_projectiles = 5
 
         self.coords_tirs = ()
 
@@ -259,6 +265,7 @@ class PlayerShooter(SpriteY) :
             projectile.vx = 5*self.coeff_directeur
             projectile.vy = 0
             self.projectiles.append(projectile)
+            sound.shot_sound.play()
 
     def delay(self) : 
         return pygame.time.get_ticks() - self.time_last_shot >= 750
