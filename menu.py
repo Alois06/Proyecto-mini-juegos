@@ -79,19 +79,19 @@ class Menu_Solo(Menu) :
         img_game1_1 = pygame.transform.scale_by(self.img_button.copy(), 1.0)
         img_game1_2 = pygame.transform.scale_by(self.img_button.copy(), 0.90)
 
-        img_game1_1.blit(police1.render("Game 1", False, 0), (60, 32))
-        img_game1_2.blit(police2.render("Game 1", False, 0), (56, 28))
+        img_game1_1.blit(police1.render("Tennis", False, 0), (60, 32))
+        img_game1_2.blit(police2.render("Tennis", False, 0), (56, 28))
 
-        self.button_game1 = Button(screen, [img_game1_1, img_game1_2], (200, 350))
+        self.button_game1 = Button(screen, [img_game1_1, img_game1_2], (350, 350))
 
         #bouton du deuxième jeu (shots)
         img_game2_1 = pygame.transform.scale_by(self.img_button.copy(), 1.0)
         img_game2_2 = pygame.transform.scale_by(self.img_button.copy(), 0.90)
 
-        img_game2_1.blit(police1.render("Game 2", False, 0), (60, 32))
-        img_game2_2.blit(police2.render("Game 2", False, 0), (56, 28))
+        img_game2_1.blit(police1.render("Shoots", False, 0), (60, 32))
+        img_game2_2.blit(police2.render("Shoots", False, 0), (56, 28))
 
-        self.button_game2 = Button(screen, [img_game2_1, img_game2_2], (450, 350))
+        self.button_game2 = Button(screen, [img_game2_1, img_game2_2], (720, 350))
 
     #Affiche les éléments du menu
     def draw(self) :
@@ -112,19 +112,19 @@ class Menu_2players(Menu) :
         img_game1_1 = pygame.transform.scale_by(self.img_button.copy(), 1.0)
         img_game1_2 = pygame.transform.scale_by(self.img_button.copy(), 0.90)
 
-        img_game1_1.blit(police1.render("Game 1", False, 0), (60, 32))
-        img_game1_2.blit(police2.render("Game 1", False, 0), (56, 28))
+        img_game1_1.blit(police1.render("Tennis", False, 0), (60, 32))
+        img_game1_2.blit(police2.render("Tennis", False, 0), (56, 28))
 
-        self.button_game1 = Button(screen, [img_game1_1, img_game1_2], (200, 350))
+        self.button_game1 = Button(screen, [img_game1_1, img_game1_2], (350, 350))
 
         #bouton du deuxième jeu (shots)
         img_game2_1 = pygame.transform.scale_by(self.img_button.copy(), 1.0)
         img_game2_2 = pygame.transform.scale_by(self.img_button.copy(), 0.90)
 
-        img_game2_1.blit(police1.render("Game 2", False, 0), (60, 32))
-        img_game2_2.blit(police2.render("Game 2", False, 0), (56, 28))
+        img_game2_1.blit(police1.render("Shoots", False, 0), (60, 32))
+        img_game2_2.blit(police2.render("Shoots", False, 0), (56, 28))
 
-        self.button_game2 = Button(screen, [img_game2_1, img_game2_2], (450, 350))
+        self.button_game2 = Button(screen, [img_game2_1, img_game2_2], (720, 350))
 
     #Affiche les éléments du menu
     def draw(self) :

@@ -7,8 +7,11 @@ from sound import sound
 #Objets pour le jeu de raquette
 
 #classe de la balle pour le jeu de raquettes
-class Ball :
-    def __init__(self, screen, image: pygame.Surface, coords) : 
+class Ball(pygame.sprite.Sprite) :
+    def __init__(self, screen, image: pygame.Surface, coords) :
+
+        super().__init__()
+
         self.screen = screen
 
         #création de la balle
@@ -37,120 +40,129 @@ class Ball :
 
         for f in range(int(self.a)) : 
 
-            if self.rect.top <= 0 or self.rect.bottom >= 720 or self.rect.left <= 0 or self.rect.right >= 1080 :
-                if sound.ball_sound.get_num_channels() == 0 :
-                    sound.ball_sound.play()
-
-                if self.rect.top <= 0 :
-                    self.vy = abs(self.vy)
-                    
-                elif self.rect.bottom >= 720: 
-                    self.vy = -abs(self.vy)
-
-                if self.rect.left <= 0 or self.rect.right >= 1080 :
-                    self.vx = 0
-
-            for obstacle in walls + rackets : 
-
-                obstacle_obj = obstacle
-                obstacle = obstacle.rect
-
-                original_vx = self.vx
-                original_vy = self.vy
-
-                if self.rect.colliderect(obstacle) :
-
-                    if sound.ball_sound.get_num_channels() == 0 :
-                        sound.ball_sound.play()
-
-                    #Touche le haut ou le bas d'un obstacle
-                    if (self.rect.left > obstacle.left and self.rect.right < obstacle.right):
-                        if self.rect.top > obstacle.top and self.rect.top < obstacle.bottom :
-                            self.vy = abs(self.vy)
-                        elif self.rect.bottom > obstacle.top and self.rect.bottom < obstacle.bottom : 
-                            self.vy = -abs(self.vy)
-                    
-                    #Touche le côté gauche ou droite d'un obstacle
-                    if self.rect.top > obstacle.top and self.rect.bottom < obstacle.bottom : 
-                        if self.rect.left > obstacle.left and self.rect.left < obstacle.right :
-                            self.vx = abs(self.vx)
-                        elif self.rect.right > obstacle.left and self.rect.right < obstacle.right : 
-                            self.vx = -abs(self.vx)
-
-                    #Touche un angle
-                    if original_vx == self.vx and original_vy == self.vy :
-
-                        if self.rect.collidepoint(obstacle.bottomright) : 
-                            dx = obstacle.right - self.rect.left
-                            dy = obstacle.bottom - self.rect.top
-
-                            if self.vx < 0 and self.vy < 0 and abs(dx-dy) <= 2 :
-                                self.vx = abs(self.vx)
-                                self.vy = abs(self.vy)
-                            elif self.vx < 0 and self.vy > 0 : 
-                                self.vx = abs(self.vx)
-                            elif self.vx > 0 and self.vy < 0 : 
-                                self.vy = abs(self.vy)
-                            else : 
-                                comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
-                                self.vx, self.vy = comparaison[0], comparaison[1]
-                        
-                        if self.rect.collidepoint(obstacle.topright) : 
-                            dx = obstacle.right - self.rect.left
-                            dy = abs(obstacle.top - self.rect.bottom)
-                            
-                            if self.vx < 0 and self.vy > 0 and abs(dx-dy) <= 2 :
-                                self.vx = abs(self.vx)
-                                self.vy = -abs(self.vy)
-                            elif self.vx < 0 and self.vy < 0 : 
-                                self.vx = abs(self.vx)
-                            elif self.vx > 0 and self.vy > 0 : 
-                                self.vy = -abs(self.vy)
-                            else : 
-                                comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
-                                self.vx, self.vy = comparaison[0], comparaison[1]
-
-                        if self.rect.collidepoint(obstacle.topleft) : 
-                            dx = abs(obstacle.left - self.rect.right)
-                            dy = abs(obstacle.top - self.rect.bottom)
-
-                            if self.vx > 0 and self.vy > 0 and abs(dx-dy) <= 2 :
-                                self.vx = -abs(self.vx)
-                                self.vy = -abs(self.vy)
-                            elif self.vx > 0 and self.vy < 0 : 
-                                self.vx = -abs(self.vx)
-                            elif self.vx < 0 and self.vy > 0 : 
-                                self.vy = -abs(self.vy)
-                            else : 
-                                comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
-                                self.vx, self.vy = comparaison[0], comparaison[1]
-
-                        if self.rect.collidepoint(obstacle.bottomleft) : 
-                            dx = abs(obstacle.left - self.rect.right)
-                            dy = obstacle.bottom - self.rect.top
-                            
-                            if self.vx > 0 and self.vy < 0 and abs(dx-dy) <= 2 :
-                                self.vx = -abs(self.vx)
-                                self.vy = abs(self.vy)
-                            elif self.vx > 0 and self.vy > 0 : 
-                                self.vx = -abs(self.vx)
-                            elif self.vx < 0 and self.vy < 0 : 
-                                self.vy = abs(self.vy)
-                            else : 
-                                comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
-                                self.vx, self.svy = comparaison[0], comparaison[1]
-                    
-                    #obstacles avec rebond aléatoire ou téléportation
-                    if type(obstacle_obj) == ObstacleRebond or type(obstacle_obj) == ObstacleTeleportation :
-                        obstacle_obj.effect(self)
-
-                    #pour éviter que la balle reste coincée dans un obstacle en mouvement
-                    elif type(obstacle_obj) == ObstacleMouvant : 
-                        for i in range(3) : 
-                            self.move()
+            #vérifie si la balle touche les bords de l'écran
+            self.collisions_bords()
+            
+            #vérifie si la balle touche un obstacle
+            if self.rect.collidelist(walls + rackets) >= 0 :
+                self.collisions(walls, rackets) 
 
             #Applique le mouvement de la balle
             self.move()
+    
+    def collisions_bords(self) :
+        if self.rect.top <= 0 or self.rect.bottom >= 720 or self.rect.left <= 0 or self.rect.right >= 1080 :
+            if sound.ball_sound.get_num_channels() == 0 :
+                sound.ball_sound.play()
+
+            if self.rect.top <= 0 :
+                self.vy = abs(self.vy)
+                
+            elif self.rect.bottom >= 720: 
+                self.vy = -abs(self.vy)
+
+            if self.rect.left <= 0 or self.rect.right >= 1080 :
+                self.vx = 0
+
+    def collisions(self, walls:list, rackets:list) : 
+        for obstacle in walls + rackets : 
+
+            obstacle_obj = obstacle
+            obstacle = obstacle.rect
+
+            original_vx = self.vx
+            original_vy = self.vy
+
+            if self.rect.colliderect(obstacle) :
+
+                if sound.ball_sound.get_num_channels() == 0 :
+                    sound.ball_sound.play()
+
+                #Touche le haut ou le bas d'un obstacle
+                if (self.rect.left > obstacle.left and self.rect.right < obstacle.right):
+                    if self.rect.top > obstacle.top and self.rect.top < obstacle.bottom :
+                        self.vy = abs(self.vy)
+                    elif self.rect.bottom > obstacle.top and self.rect.bottom < obstacle.bottom : 
+                        self.vy = -abs(self.vy)
+                
+                #Touche le côté gauche ou droite d'un obstacle
+                if self.rect.top > obstacle.top and self.rect.bottom < obstacle.bottom : 
+                    if self.rect.left > obstacle.left and self.rect.left < obstacle.right :
+                        self.vx = abs(self.vx)
+                    elif self.rect.right > obstacle.left and self.rect.right < obstacle.right : 
+                        self.vx = -abs(self.vx)
+
+                #Touche un angle
+                if original_vx == self.vx and original_vy == self.vy :
+
+                    if self.rect.collidepoint(obstacle.bottomright) : 
+                        dx = obstacle.right - self.rect.left
+                        dy = obstacle.bottom - self.rect.top
+
+                        if self.vx < 0 and self.vy < 0 and abs(dx-dy) <= 2 :
+                            self.vx = abs(self.vx)
+                            self.vy = abs(self.vy)
+                        elif self.vx < 0 and self.vy > 0 : 
+                            self.vx = abs(self.vx)
+                        elif self.vx > 0 and self.vy < 0 : 
+                            self.vy = abs(self.vy)
+                        else : 
+                            comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
+                            self.vx, self.vy = comparaison[0], comparaison[1]
+                    
+                    if self.rect.collidepoint(obstacle.topright) : 
+                        dx = obstacle.right - self.rect.left
+                        dy = abs(obstacle.top - self.rect.bottom)
+                        
+                        if self.vx < 0 and self.vy > 0 and abs(dx-dy) <= 2 :
+                            self.vx = abs(self.vx)
+                            self.vy = -abs(self.vy)
+                        elif self.vx < 0 and self.vy < 0 : 
+                            self.vx = abs(self.vx)
+                        elif self.vx > 0 and self.vy > 0 : 
+                            self.vy = -abs(self.vy)
+                        else : 
+                            comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
+                            self.vx, self.vy = comparaison[0], comparaison[1]
+
+                    if self.rect.collidepoint(obstacle.topleft) : 
+                        dx = abs(obstacle.left - self.rect.right)
+                        dy = abs(obstacle.top - self.rect.bottom)
+
+                        if self.vx > 0 and self.vy > 0 and abs(dx-dy) <= 2 :
+                            self.vx = -abs(self.vx)
+                            self.vy = -abs(self.vy)
+                        elif self.vx > 0 and self.vy < 0 : 
+                            self.vx = -abs(self.vx)
+                        elif self.vx < 0 and self.vy > 0 : 
+                            self.vy = -abs(self.vy)
+                        else : 
+                            comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
+                            self.vx, self.vy = comparaison[0], comparaison[1]
+
+                    if self.rect.collidepoint(obstacle.bottomleft) : 
+                        dx = abs(obstacle.left - self.rect.right)
+                        dy = obstacle.bottom - self.rect.top
+                        
+                        if self.vx > 0 and self.vy < 0 and abs(dx-dy) <= 2 :
+                            self.vx = -abs(self.vx)
+                            self.vy = abs(self.vy)
+                        elif self.vx > 0 and self.vy > 0 : 
+                            self.vx = -abs(self.vx)
+                        elif self.vx < 0 and self.vy < 0 : 
+                            self.vy = abs(self.vy)
+                        else : 
+                            comparaison = tools.compare_impact(dx, dy, self.vx, self.vy)
+                            self.vx, self.svy = comparaison[0], comparaison[1]
+                
+                #obstacles avec rebond aléatoire ou téléportation
+                if type(obstacle_obj) == ObstacleRebond or type(obstacle_obj) == ObstacleTeleportation :
+                    obstacle_obj.effect(self)
+
+                #pour éviter que la balle reste coincée dans un obstacle en mouvement
+                elif type(obstacle_obj) == ObstacleMouvant : 
+                    for i in range(3) : 
+                        self.move()
 
     #Affiche la balle sur la fenêtre de jeu
     def draw(self) : 
@@ -161,19 +173,31 @@ class Projectile(Ball) :
     def __init__(self, screen, image, coords):
         super().__init__(screen, image, coords)
 
+        #mask du projectile
+        self.mask = pygame.mask.from_surface(self.image)
+
         #sert pour la rotation de l'image
         self.image_origine = image
         self.angle = 0
 
     def apply(self, walls:list) : 
-        #fonction move de la classe mère
-        super().apply(walls, [])
+
+        #vérifie si la balle touche les bords de l'écran
+        self.collisions_bords()
+        
+        #vérifie si la balle touche un obstacle
+        if pygame.sprite.spritecollide(self, walls, False, pygame.sprite.collide_mask) :
+            self.collisions(walls, []) 
+
+        #Applique le mouvement de la balle
+        self.move()
 
         #modification de l'orientation de l'image
         self.angle = tools.return_angle(self.vx, self.vy)
         img = self.image_origine.copy()
         img = pygame.transform.rotate(img, self.angle*(-1))
         self.image = img
+        self.mask = pygame.mask.from_surface(self.image)
 
         #nouveau rectangle
         coords = self.rect.center
@@ -191,6 +215,8 @@ class SpriteY(pygame.sprite.Sprite) :
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.center = coords
+
+        self.mask = pygame.mask.from_surface(self.image)
 
         #vecteur déplacement
         self.vy = -5
@@ -281,6 +307,8 @@ class Obstacle(pygame.sprite.Sprite) :
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.center = coords
+
+        self.mask = pygame.mask.from_surface(self.image)
         
     def draw(self) : 
         self.screen.blit(self.image, self.rect)
@@ -367,4 +395,3 @@ class ObstacleMouvant(Obstacle) :
                 self.vy = self.sign_sin*abs(self.vy)
 
         self.move()
-            

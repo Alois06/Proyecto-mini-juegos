@@ -126,7 +126,7 @@ class Game :
 
         else : 
             txt = self.police4.render("PLAYER " + str(self.vainqueur) + " WON !", False, (255, 255, 255))
-            self.screen.blit(txt, (400, 300))
+            self.screen.blit(txt, (360, 300))
 
     #applique les actions de la partie
     def apply(self) :
@@ -164,12 +164,13 @@ class Game :
 
             bullet.apply(self.walls)
 
-            if bullet.rect.colliderect(self.player1.rect) : 
+            if pygame.sprite.collide_mask(bullet, self.player1) : 
                 player.projectiles.remove(bullet)
                 self.player1.life -= 1
                 sound.explosion_sound.play()
 
-            elif bullet.rect.colliderect(self.player2.rect) : 
+            elif pygame.sprite.collide_mask(bullet, self.player2) :
+                #bullet.rect.colliderect(self.player2.rect) : 
                 player.projectiles.remove(bullet)
                 self.player2.life -= 1
                 sound.explosion_sound.play()
