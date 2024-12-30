@@ -173,7 +173,7 @@ def norme(A:tuple, B:tuple) :
 def verification(obstacles:list, coords, rect:pygame.rect.Rect, vx, x_objectif) : 
     rect.center = coords
     while rect.left > x_objectif :
-        if rect.collidelist(obstacles) :
+        if rect.collidelist(obstacles) >= 0 :
             return False
         else : 
             rect.x += vx

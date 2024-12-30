@@ -70,11 +70,11 @@ class Game :
         #obstacles mouvants
         surface = pygame.surface.Surface((25, 125))
         surface.fill((255, 230, 100))
-        self.walls.append(ObstacleMouvant(self.screen, surface, (450, 360), 0, -1, 5, 400))
-        self.walls.append(ObstacleMouvant(self.screen, surface, (630, 360), 0, 1, 5, 400))
+        self.walls.append(ObstacleMouvant(self.screen, surface, (450, 320), 0, -1, 5, 400))
+        self.walls.append(ObstacleMouvant(self.screen, surface, (630, 400), 0, 1, 5, 400))
 
         #obstacles normaux à rebonds
-        surfaces = [[225, 75, 150, 620], [705, 75, 150, 620]]
+        surfaces = [[225, 120, 150, 480], [705, 120, 150, 480]]
         for s in surfaces : 
             for i in range(random.randint (2, 5)) : 
                 x = random.randint(s[0], s[0] + s[2])
@@ -235,7 +235,7 @@ class GameSolo(Game) :
     def apply(self):
 
         if not(self.game_over_etat) :
-            self.ia_move()
+            self.ia_move2()
 
         super().apply()
 
@@ -319,6 +319,65 @@ class GameSolo(Game) :
 
         #déplacement pour tirer
         if self.player2.delay() and abs(min_dy) >= 250 and tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 270): 
+            if self.player1.rect.top > self.player2.rect.bottom and self.player1.vy < 0 :
+                self.player2.attack()
+            elif self.player1.rect.bottom < self.player2.rect.top and self.player1.vy > 0 : 
+                self.player2.attack()
+
+    def ia_move2(self) : 
+        liste_d = []
+        liste_dy = []
+        coeffs = []
+        
+        #on étudie la position et autres caractéristiques des projectiles pour les éviter
+        for bullet in self.player1.projectiles + self.player2.projectiles : 
+
+            #on calcule la position future du projectile en x = 950
+            prediction = tools.prediction(bullet.rect.copy(), bullet.vx, bullet.vy, 1, 950, self.walls, 15)
+
+            if prediction[1] > 0 : 
+                future_y_coords = tools.find_y(prediction[0], 950, prediction[1], prediction[2])
+
+                #on détermine la distance entre la balle et sa future position
+                norme = tools.norme(prediction[0], (950, future_y_coords))
+
+                #on détermine l'écart entre l'ordonnée du personnage de l'ia et la future ordonnée du projectile
+                dy = future_y_coords - self.player2.rect.centery
+
+                liste_d.append(norme)
+                liste_dy.append(dy)
+                coeffs.append(norme**2 + dy)
+        
+        #on fait bouger le personnage pour éviter les balles
+        min_dy = 0 
+        min_coeff = 0
+        if len(coeffs) > 0 :
+            min_coeff = min(coeffs)
+            min_dy = liste_dy[coeffs.index(min_coeff)]
+
+            if abs(min_dy) <= 250 and not((self.player2.rect.bottom <= 150 or self.player2.rect.top >= 570) and not(tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 800))): 
+                
+                """#dans la zone en dessous de y = 600 :
+                if self.player2.rect.top >= 600 : 
+                    if min_dy > -20 and self.player2.vy > 0 :
+                        self.player2.attack()
+
+                elif self.player2.rect.bottom <= 120 : 
+                    if min_dy < 50 and self.player2.vy < 0 :
+                        self.player2.attack()
+
+                else : """
+                if min_dy <= 0 and self.player2.vy < 0 :
+                    self.player2.attack()
+            
+                elif min_dy > 0 and self.player2.vy > 0 :
+                    self.player2.attack()
+        else : 
+            min_dy = 720
+            min_coeff = 720
+
+        #déplacement pour tirer
+        if self.player2.delay() and min_coeff >= 300 and abs(min_dy) >= 150 and tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 200) :
             if self.player1.rect.top > self.player2.rect.bottom and self.player1.vy < 0 :
                 self.player2.attack()
             elif self.player1.rect.bottom < self.player2.rect.top and self.player1.vy > 0 : 
