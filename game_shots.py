@@ -207,6 +207,7 @@ class Game :
     def end_countdown(self) : 
         return pygame.time.get_ticks() - self.time_start_game_over >= self.end_countdown_delay 
 
+#classe pour la game en solo contre un bot
 class GameSolo(Game) : 
     def __init__(self, screen, police1, police2, police3, police4):
         super().__init__(screen, police1, police2, police3, police4)
@@ -235,7 +236,7 @@ class GameSolo(Game) :
     def apply(self):
 
         if not(self.game_over_etat) :
-            self.ia_move2()
+            self.ia_move()
 
         super().apply()
 
@@ -264,71 +265,20 @@ class GameSolo(Game) :
     #gère les déplacements et actions de l'ia
     def ia_move(self) : 
 
-        #récupération de la future position des balles
-        bullets = []
-        liste_d = []
-        liste_dy = []
-        
-        #on étudie la position et autres caractéristiques des projectiles pour les éviter
-        for bullet in self.player1.projectiles + self.player2.projectiles : 
+        #récupération des informations sur les projectiles
+        data = self.recup_data()
 
-            #on calcule la position future du projectile en x = 950
-            prediction = tools.prediction(bullet.rect.copy(), bullet.vx, bullet.vy, 1, 950, self.walls, 15)
+        #on fait bouger le bot en fonction de ces informations
+        self.apply_ia_move(data)
 
-            if prediction[1] > 0 : 
-                future_y_coords = tools.find_y(prediction[0], 950, prediction[1], prediction[2])
-                bullets.append((prediction[0], (950, future_y_coords)))
-
-                #on détermine la distance entre la balle et sa future position
-                norme = tools.norme(prediction[0], (950, future_y_coords))
-
-                #on détermine l'écart entre l'ordonnée du personnage de l'ia et la future ordonnée du projectile
-                dy = 0
-                if future_y_coords <= self.player2.rect.bottom and future_y_coords >= self.player2.rect.top :
-                    if self.player2.rect.bottom <= 150 : 
-                        dy = future_y_coords - self.player2.rect.bottom
-                    elif self.player2.rect.top >= 570 : 
-                        dy = future_y_coords - self.player2.rect.top
-                else : 
-                    dy = future_y_coords - self.player2.rect.centery
-
-                """
-                for i in range(len(liste_d)) :
-                    if liste_d[i] == norme
-                """
-                liste_d.append(norme)
-                liste_dy.append(dy)
-
-        #on en déduit le mouvement à adopter pour éviter la balle la plus dangereuse
-        min_dy = None
-
-        if len(liste_d) > 0 :
-            min_d = min(liste_d)
-            min_dy = liste_dy[liste_d.index(min_d)]
-
-            if abs(min_dy) <= 250 and tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 900): 
-
-                if min_dy < 0 and self.player2.vy < 0 :
-                    self.player2.attack()
-                
-                elif min_dy > 0 and self.player2.vy > 0 :
-                    self.player2.attack()
-
-        else : 
-            min_dy = 720
-
-        #déplacement pour tirer
-        if self.player2.delay() and abs(min_dy) >= 250 and tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 270): 
-            if self.player1.rect.top > self.player2.rect.bottom and self.player1.vy < 0 :
-                self.player2.attack()
-            elif self.player1.rect.bottom < self.player2.rect.top and self.player1.vy > 0 : 
-                self.player2.attack()
-
-    def ia_move2(self) : 
+    #récupères les informations sur les projectiles
+    def recup_data(self) : 
+        #listes récupérant les données des projectiles (distance, différence en y, coefficients de "dangerosité" et future coordonnée y)
         liste_d = []
         liste_dy = []
         coeffs = []
-        
+        liste_y = []
+
         #on étudie la position et autres caractéristiques des projectiles pour les éviter
         for bullet in self.player1.projectiles + self.player2.projectiles : 
 
@@ -337,6 +287,7 @@ class GameSolo(Game) :
 
             if prediction[1] > 0 : 
                 future_y_coords = tools.find_y(prediction[0], 950, prediction[1], prediction[2])
+                liste_y.append(future_y_coords)
 
                 #on détermine la distance entre la balle et sa future position
                 norme = tools.norme(prediction[0], (950, future_y_coords))
@@ -348,30 +299,40 @@ class GameSolo(Game) :
                 liste_dy.append(dy)
                 coeffs.append(norme**2 + dy)
         
+        return [liste_d, liste_dy, coeffs, liste_y]
+
+    #déplacement du bot pour soit éviter les projectiles soit attaquer le joueur
+    def apply_ia_move(self, data:list) : 
+
         #on fait bouger le personnage pour éviter les balles
         min_dy = 0 
         min_coeff = 0
-        if len(coeffs) > 0 :
-            min_coeff = min(coeffs)
-            min_dy = liste_dy[coeffs.index(min_coeff)]
+        if len(data[2]) > 0 :
+            min_coeff = min(data[2])
+            min_dy = data[1][data[2].index(min_coeff)]
+            min_y = data[3][data[2].index(min_coeff)]
 
-            if abs(min_dy) <= 250 and not((self.player2.rect.bottom <= 150 or self.player2.rect.top >= 570) and not(tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 800))): 
+            verfication = tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 750)
+
+            if abs(min_dy) <= 250 and not((self.player2.rect.bottom <= 150 or self.player2.rect.top >= 570) and not(verfication)): 
                 
-                """#dans la zone en dessous de y = 600 :
-                if self.player2.rect.top >= 600 : 
-                    if min_dy > -20 and self.player2.vy > 0 :
+                #dans la zone en dessous de y = 570 :
+                if min_y >= 570 : 
+                    if self.player2.vy > 0 :
                         self.player2.attack()
 
-                elif self.player2.rect.bottom <= 120 : 
-                    if min_dy < 50 and self.player2.vy < 0 :
+                #dans la zone au dessus de y = 150 :
+                elif min_y <= 150 : 
+                    if self.player2.vy < 0 :
                         self.player2.attack()
 
-                else : """
-                if min_dy <= 0 and self.player2.vy < 0 :
-                    self.player2.attack()
-            
-                elif min_dy > 0 and self.player2.vy > 0 :
-                    self.player2.attack()
+                #sinon : mouvement pour éviter le projectile le plus dangereux
+                else :
+                    if min_dy <= 0 and self.player2.vy < 0 :
+                        self.player2.attack()
+                
+                    elif min_dy > 0 and self.player2.vy > 0 :
+                        self.player2.attack()
         else : 
             min_dy = 720
             min_coeff = 720
