@@ -267,9 +267,9 @@ class Game :
     def manage_events(self, event) : 
         #Bouge la raquette du joueur 1 si la touche shift gauche est pressée
         if event.type == pygame.KEYDOWN :
-            if event.key == pygame.K_LSHIFT:
+            if event.key == pygame.K_a:
                 self.racket1.vy *= -1
-            elif event.key == pygame.K_RSHIFT:
+            elif event.key == pygame.K_p:
                 self.racket2.vy *= -1
 
     #renvoie le temps qui s'est écoulé depuis le début de la partie
