@@ -272,6 +272,12 @@ class PlayerShooter(SpriteY) :
 
         self.actualize_coords_tirs()
 
+        #accélération
+        self.a = 1
+
+    def move(self) :
+        self.rect.y += self.vy*self.a
+
     def apply(self):
         super().apply()
 

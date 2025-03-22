@@ -28,6 +28,9 @@ class Game :
         self.time_start_game_over = None
         self.end_countdown_delay = 5000
 
+        #acceleration
+        self.coeff_acceleration = 0.00001
+
         #image de fond d'écran
         self.background = pygame.image.load("assets/background_désert.PNG")
         self.background = pygame.transform.scale(self.background, (1080, 720))
@@ -76,7 +79,7 @@ class Game :
         #obstacles normaux à rebonds
         surfaces = [[225, 120, 150, 480], [705, 120, 150, 480]]
         for s in surfaces : 
-            for i in range(random.randint (2, 5)) : 
+            for i in range(random.randint (1, 3)) : 
                 x = random.randint(s[0], s[0] + s[2])
                 y = random.randint(s[1], s[1] + s[3])
                 self.walls.append(ObstacleRebond(self.screen, self.image_cactus, (x,y)))
@@ -133,6 +136,9 @@ class Game :
 
         #actions de la partie tant que celle-ci n'est pas finie
         if not(self.game_over_etat) : 
+
+            #accélération
+            self.acceleration()
 
             #applique les actions des obstacles
             for obstacle in self.walls : 
@@ -206,6 +212,27 @@ class Game :
     #renvoie True si le délai pour l'affichage de fin de partie s'est achevé
     def end_countdown(self) : 
         return pygame.time.get_ticks() - self.time_start_game_over >= self.end_countdown_delay 
+    
+    def acceleration(self) : 
+        #calcul du coeff d'accélération
+        a = 1 + self.coeff_acceleration*(pygame.time.get_ticks() - self.time_start)
+
+        #application du coeff
+        if a <= 2 : 
+
+            #aux projectiles
+            for bullet in (self.player1.projectiles + self.player2.projectiles) : 
+                bullet.a = a
+
+            #aux joueurs
+            self.player1.a = a
+            self.player2.a = a
+
+            #aux obstacles mouvant
+            for obstacle in self.walls : 
+                if type(obstacle) == ObstacleMouvant : 
+                    obstacle.a = a
+
 
 #classe pour la game en solo contre un bot
 class GameSolo(Game) : 
@@ -338,7 +365,7 @@ class GameSolo(Game) :
             min_coeff = 720
 
         #déplacement pour tirer
-        if self.player2.delay() and min_coeff >= 300 and abs(min_dy) >= 150 and tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 200) :
+        if self.player2.delay() and min_coeff >= 300 and abs(min_dy) >= 150 and tools.verification(self.walls, self.player2.coords_tirs, self.player2.image_projectile.get_rect(), -15, 500) :
             if self.player1.rect.top > self.player2.rect.bottom and self.player1.vy < 0 :
                 self.player2.attack()
             elif self.player1.rect.bottom < self.player2.rect.top and self.player1.vy > 0 : 

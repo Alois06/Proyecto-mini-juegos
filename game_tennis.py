@@ -265,7 +265,7 @@ class Game :
 
     #gère les évènements
     def manage_events(self, event) : 
-        #Bouge la raquette du joueur 1 si la touche shift gauche est pressée
+        #Bouge la raquette du joueur 1 si la touche a est pressée et celle du joueur 2 si la touche p est pressée
         if event.type == pygame.KEYDOWN :
             if event.key == pygame.K_a:
                 self.racket1.vy *= -1
